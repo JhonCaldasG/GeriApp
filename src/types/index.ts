@@ -17,6 +17,7 @@ export interface Paciente {
   };
   fotoUri?: string;
   riesgoCaida?: boolean;
+  dnr?: boolean;
   fallecido?: boolean;
   fechaFallecimiento?: string | null;
   fechaIngreso?: string | null;
