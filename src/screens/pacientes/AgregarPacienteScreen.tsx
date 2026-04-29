@@ -54,6 +54,7 @@ export default function AgregarPacienteScreen({ navigation, route }: Props) {
   const [contactoRelacion, setContactoRelacion] = useState('');
   const [fotoUri, setFotoUri] = useState<string | undefined>(undefined);
   const [riesgoCaida, setRiesgoCaida] = useState(false);
+  const [dnr, setDnr] = useState(false);
   const [fallecido, setFallecido] = useState(false);
   const [fechaFallecimiento, setFechaFallecimiento] = useState('');
   const hoyFormato = (() => { const d = new Date(); const dd = String(d.getDate()).padStart(2,'0'); const mm = String(d.getMonth()+1).padStart(2,'0'); return `${dd}/${mm}/${d.getFullYear()}`; })();
@@ -79,6 +80,7 @@ export default function AgregarPacienteScreen({ navigation, route }: Props) {
       setContactoRelacion(p.contactoFamiliar?.relacion ?? '');
       setFotoUri(p.fotoUri);
       setRiesgoCaida(p.riesgoCaida ?? false);
+      setDnr(p.dnr ?? false);
       setFallecido(p.fallecido ?? false);
       if (p.fechaFallecimiento) {
         const [y, m, d] = p.fechaFallecimiento.slice(0, 10).split('-');
@@ -161,6 +163,7 @@ export default function AgregarPacienteScreen({ navigation, route }: Props) {
       },
       fotoUri,
       riesgoCaida,
+      dnr,
       fallecido,
       fechaFallecimiento: fallecido && fechaFallecimiento && validarFecha(fechaFallecimiento)
         ? parsearFecha(fechaFallecimiento)
@@ -274,6 +277,20 @@ export default function AgregarPacienteScreen({ navigation, route }: Props) {
           color={COLORS.danger}
         />
       </View>
+
+      {/* Toggle DNR */}
+      <View style={[styles.toggleRow, { backgroundColor: colors.surface }]}>
+        <MaterialCommunityIcons name="heart-off" size={22} color={dnr ? COLORS.danger : COLORS.textSecondary} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.toggleLabel}>DNR (No Reanimar)</Text>
+          <Text style={styles.toggleSubLabel}>El paciente tiene orden de no reanimación</Text>
+        </View>
+        <Switch
+          value={dnr}
+          onValueChange={setDnr}
+          color={COLORS.danger}
+        />
+      </View>
       <Campo label="Tipo de Afiliación" value={obraSocial} onChangeText={setObraSocial} />
       <Campo label="EPS" value={eps} onChangeText={setEps} />
       <Campo label="Médico Responsable" value={medicoResponsable} onChangeText={setMedicoResponsable} />
@@ -353,4 +370,12 @@ const styles = StyleSheet.create({
   },
   switchLabel: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.textPrimary },
   switchSub: { fontSize: FONT_SIZES.xs, color: COLORS.textSecondary, marginTop: 2 },
+  toggleRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.surface, borderRadius: 10,
+    borderWidth: 1, borderColor: COLORS.border,
+    padding: 14, marginBottom: 12, gap: 12,
+  },
+  toggleLabel: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.textPrimary },
+  toggleSubLabel: { fontSize: FONT_SIZES.xs, color: COLORS.textSecondary, marginTop: 2 },
 });
