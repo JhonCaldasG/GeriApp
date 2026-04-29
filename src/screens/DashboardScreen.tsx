@@ -458,6 +458,16 @@ export default function DashboardScreen() {
     ? `${totalAlertas} alerta${totalAlertas !== 1 ? 's' : ''}`
     : 'Todo en orden';
 
+  const cumpleaniosHoy = useMemo(() => {
+    const ahora = new Date();
+    return pacientes.filter(p => {
+      if (p.fallecido || !p.fechaNacimiento) return false;
+      const fn = p.fechaNacimiento.slice(5, 10); // MM-DD
+      const cumple = `${ahora.getFullYear()}-${fn}`;
+      return new Date(cumple).toDateString() === ahora.toDateString();
+    });
+  }, [pacientes]);
+
   return (
     <View style={{ flex: 1 }}>
       <Animated.View style={[styles.banner, { opacity: bannerOpacity }]} pointerEvents="none">
@@ -517,6 +527,30 @@ export default function DashboardScreen() {
         <MaterialCommunityIcons name="logout" size={20} color={COLORS.danger} />
         <Text style={styles.sesionCerrar}>Cerrar sesión</Text>
       </TouchableOpacity>
+
+      {/* Banner cumpleaños */}
+      {cumpleaniosHoy.map(p => (
+        <View key={p.id} style={styles.bannerCumple}>
+          <Text style={styles.bannerCumpleTexto}>
+            🎂 ¡Hoy cumple años {p.nombre} {p.apellido}!
+          </Text>
+        </View>
+      ))}
+
+      {/* Banner de pacientes críticos */}
+      {alertas.conAnomalias.filter(a => a.critico).length > 0 && (
+        <TouchableOpacity
+          style={styles.bannerCritico}
+          onPress={() => navigation.navigate('ClinicaDashboard')}
+          activeOpacity={0.85}
+        >
+          <MaterialCommunityIcons name="alert-circle" size={18} color="#fff" />
+          <Text style={styles.bannerCriticoTexto}>
+            {alertas.conAnomalias.filter(a => a.critico).length} paciente(s) con signos críticos — Ver detalle
+          </Text>
+          <MaterialCommunityIcons name="chevron-right" size={16} color="#fff" />
+        </TouchableOpacity>
+      )}
 
       {/* Estadísticas navegables */}
       <Text style={styles.seccion}>Resumen General</Text>
@@ -599,6 +633,60 @@ export default function DashboardScreen() {
         )}
       </View>
 
+      {!isAseo && (
+        <>
+          <Text style={styles.seccion}>Acciones Rápidas</Text>
+          <View style={styles.accionesGrid}>
+            <TouchableOpacity
+              style={[styles.accionBtn, { backgroundColor: colors.surface }]}
+              onPress={() => navigation.navigate('SignosVitales')}
+              activeOpacity={0.75}
+            >
+              <MaterialCommunityIcons name="heart-pulse" size={24} color={COLORS.secondaryLight ?? COLORS.secondary} />
+              <Text style={[styles.accionTexto, { color: COLORS.secondaryLight ?? COLORS.secondary }]}>Registrar{'\n'}Signos</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.accionBtn, { backgroundColor: colors.surface }]}
+              onPress={() => navigation.navigate('Medicamentos')}
+              activeOpacity={0.75}
+            >
+              <MaterialCommunityIcons name="pill" size={24} color={COLORS.warningLight ?? COLORS.warning} />
+              <Text style={[styles.accionTexto, { color: COLORS.warningLight ?? COLORS.warning }]}>Medicamentos</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.accionBtn, { backgroundColor: colors.surface }]}
+              onPress={() => (navigation as any).navigate('Handover')}
+              activeOpacity={0.75}
+            >
+              <MaterialCommunityIcons name="transfer" size={24} color="#6A1B9A" />
+              <Text style={[styles.accionTexto, { color: '#6A1B9A' }]}>Nota de{'\n'}Turno</Text>
+            </TouchableOpacity>
+
+            {isAdmin && (
+              <TouchableOpacity
+                style={[styles.accionBtn, { backgroundColor: colors.surface }]}
+                onPress={() => navigation.navigate('Infracciones')}
+                activeOpacity={0.75}
+              >
+                <MaterialCommunityIcons name="alert-decagram" size={24} color={COLORS.danger} />
+                <Text style={[styles.accionTexto, { color: COLORS.danger }]}>Infracciones</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Botón EMERGENCIA */}
+          <TouchableOpacity
+            style={styles.emergenciaBtn}
+            onPress={() => (navigation as any).navigate('Emergencia')}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons name="phone-alert" size={24} color="#fff" />
+            <Text style={styles.emergenciaBtnTexto}>EMERGENCIA</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
       {/* ── ZONAS DE LIMPIEZA (solo aseo) ── */}
       {isAseo && (
@@ -910,4 +998,81 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2, shadowRadius: 4, elevation: 6,
   },
   bannerTexto: { color: COLORS.white, fontWeight: '700', fontSize: FONT_SIZES.sm },
+
+  // Banners de cumpleaños y críticos
+  bannerCumple: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#FFE082',
+  },
+  bannerCumpleTexto: {
+    fontSize: FONT_SIZES.sm,
+    color: '#E65100',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  bannerCritico: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.danger,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+  },
+  bannerCriticoTexto: {
+    flex: 1,
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: FONT_SIZES.sm,
+  },
+
+  // Acciones rápidas
+  accionesGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+    flexWrap: 'wrap',
+  },
+  accionBtn: {
+    flex: 1,
+    minWidth: '22%',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    gap: 6,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.07,
+    shadowRadius: 3,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  accionTexto: {
+    fontSize: FONT_SIZES.xs,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 15,
+  },
+  emergenciaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: COLORS.danger,
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginBottom: 16,
+    elevation: 3,
+  },
+  emergenciaBtnTexto: {
+    color: '#fff',
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
 });
