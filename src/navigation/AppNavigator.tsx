@@ -64,6 +64,14 @@ import AusenciasScreen from '../screens/pacientes/AusenciasScreen';
 import GuardiaRapidaScreen from '../screens/GuardiaRapidaScreen';
 import ClinicaDashboardScreen from '../screens/clinica/ClinicaDashboardScreen';
 import EmergenciaScreen from '../screens/EmergenciaScreen';
+import InventarioScreen from '../screens/inventario/InventarioScreen';
+import AgregarInsumoScreen from '../screens/inventario/AgregarInsumoScreen';
+import CitasMedicasScreen from '../screens/citas/CitasMedicasScreen';
+import AgregarCitaScreen from '../screens/citas/AgregarCitaScreen';
+import ListaEsperaScreen from '../screens/listaEspera/ListaEsperaScreen';
+import AsistenciaScreen from '../screens/asistencia/AsistenciaScreen';
+import HandoverScreen from '../screens/turnos/HandoverScreen';
+import MensajesScreen from '../screens/mensajes/MensajesScreen';
 
 const Tab            = createBottomTabNavigator();
 const AuthStack      = createNativeStackNavigator();
@@ -347,6 +355,50 @@ function AppTabs() {
               headerLeft: menuLeft,
               headerStyle: { backgroundColor: '#C62828' },
             }} />
+
+          {/* Inventario — todos los roles */}
+          {!soloAseo && (
+            <Tab.Screen name="Inventario" component={InventarioScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Inventario de Insumos', headerLeft: menuLeft }} />
+          )}
+          {!soloAseo && (
+            <Tab.Screen name="AgregarInsumo" component={AgregarInsumoScreen}
+              options={({ route, navigation }) => ({ headerShown: true, ...headerOpts, title: (route.params as any)?.insumoId ? 'Editar Insumo' : 'Agregar Insumo', headerLeft: () => backButton(navigation) })} />
+          )}
+
+          {/* Citas médicas — todos los roles */}
+          {!soloAseo && (
+            <Tab.Screen name="Citas" component={CitasMedicasScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Citas Médicas', headerLeft: menuLeft }} />
+          )}
+          {!soloAseo && (
+            <Tab.Screen name="AgregarCita" component={AgregarCitaScreen}
+              options={({ navigation }) => ({ headerShown: true, ...headerOpts, title: 'Nueva Cita', headerLeft: () => backButton(navigation) })} />
+          )}
+
+          {/* Lista de espera — admin */}
+          {isAdmin && (
+            <Tab.Screen name="ListaEspera" component={ListaEsperaScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Lista de Espera', headerLeft: menuLeft }} />
+          )}
+
+          {/* Asistencia — admin */}
+          {isAdmin && (
+            <Tab.Screen name="Asistencia" component={AsistenciaScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Asistencia del Personal', headerLeft: menuLeft }} />
+          )}
+
+          {/* Handover — todos */}
+          {!soloAseo && (
+            <Tab.Screen name="Handover" component={HandoverScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Nota de Turno', headerLeft: menuLeft }} />
+          )}
+
+          {/* Mensajes — todos */}
+          {!soloAseo && (
+            <Tab.Screen name="Mensajes" component={MensajesScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Mensajes Internos', headerLeft: menuLeft }} />
+          )}
         </Tab.Navigator>
         <CustomDrawer />
       </View>

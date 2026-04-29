@@ -18,41 +18,19 @@ interface ModuloCard {
 }
 
 const MODULOS_COMUNES: ModuloCard[] = [
-  {
-    tab: 'Historial',
-    label: 'Historial Médico',
-    icono: 'clipboard-text',
-    color: '#1565C0',
-    bg: '#E3F2FD',
-    descripcion: 'Registros y evolución clínica',
-  },
-  {
-    tab: 'Aseo',
-    label: 'Aseo y Limpieza',
-    icono: 'broom',
-    color: '#00695C',
-    bg: '#E0F2F1',
-    descripcion: 'Registro de limpiezas y zonas',
-  },
+  { tab: 'Historial', label: 'Historial Médico', icono: 'clipboard-text', color: '#1565C0', bg: '#E3F2FD', descripcion: 'Registros y evolución clínica' },
+  { tab: 'Aseo', label: 'Aseo y Limpieza', icono: 'broom', color: '#00695C', bg: '#E0F2F1', descripcion: 'Registro de limpiezas y zonas' },
+  { tab: 'Inventario', label: 'Inventario', icono: 'package-variant', color: '#E65100', bg: '#FFF3E0', descripcion: 'Stock de insumos y materiales' },
+  { tab: 'Citas', label: 'Citas Médicas', icono: 'calendar-heart', color: '#9C27B0', bg: '#F3E5F5', descripcion: 'Agenda de consultas y estudios' },
+  { tab: 'Handover', label: 'Nota de Turno', icono: 'transfer', color: '#6A1B9A', bg: '#EDE7F6', descripcion: 'Entrega de turno entre personal' },
+  { tab: 'Mensajes', label: 'Mensajes', icono: 'bulletin-board', color: '#0277BD', bg: '#E1F5FE', descripcion: 'Tablón de anuncios interno' },
 ];
 
 const MODULOS_ADMIN: ModuloCard[] = [
-  {
-    tab: 'Usuarios',
-    label: 'Gestión de Usuarios',
-    icono: 'account-cog',
-    color: '#6A1B9A',
-    bg: '#F3E5F5',
-    descripcion: 'Crear y administrar usuarios',
-  },
-  {
-    tab: 'Configuracion',
-    label: 'Configuración',
-    icono: 'cog',
-    color: '#E65100',
-    bg: '#FFF3E0',
-    descripcion: 'Datos del hogar geriátrico',
-  },
+  { tab: 'Usuarios', label: 'Gestión de Usuarios', icono: 'account-cog', color: '#6A1B9A', bg: '#F3E5F5', descripcion: 'Crear y administrar usuarios' },
+  { tab: 'Configuracion', label: 'Configuración', icono: 'cog', color: '#E65100', bg: '#FFF3E0', descripcion: 'Datos del hogar geriátrico' },
+  { tab: 'ListaEspera', label: 'Lista de Espera', icono: 'account-clock', color: '#AD1457', bg: '#FCE4EC', descripcion: 'Pacientes pendientes de ingreso' },
+  { tab: 'Asistencia', label: 'Asistencia', icono: 'clipboard-account', color: '#2E7D32', bg: '#E8F5E9', descripcion: 'Control de asistencia del personal' },
 ];
 
 export default function MasScreen() {
