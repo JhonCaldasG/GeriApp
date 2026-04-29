@@ -45,7 +45,7 @@ export async function registrarEntrada(usuarioId: string, usuarioNombre: string,
     .select('id')
     .eq('usuario_id', usuarioId)
     .eq('fecha', hoy)
-    .single();
+    .maybeSingle();
   if (existente) {
     const { data, error } = await supabase
       .from('asistencia')
