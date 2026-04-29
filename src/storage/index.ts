@@ -19,6 +19,7 @@ function rowToPaciente(row: any): Paciente {
     contactoFamiliar: row.contacto_familiar ?? { nombre: '', telefono: '', relacion: '' },
     fotoUri: row.foto_uri ?? undefined,
     riesgoCaida: row.riesgo_caida ?? false,
+    dnr: row.dnr ?? false,
     fallecido: row.fallecido ?? false,
     fechaFallecimiento: row.fecha_fallecimiento ?? null,
     fechaIngreso: row.fecha_ingreso ?? null,
@@ -101,6 +102,7 @@ export async function guardarPaciente(paciente: Omit<Paciente, 'id' | 'createdAt
       contacto_familiar: paciente.contactoFamiliar,
       foto_uri: paciente.fotoUri,
       riesgo_caida: paciente.riesgoCaida,
+      dnr: paciente.dnr ?? false,
       fallecido: paciente.fallecido ?? false,
       fecha_fallecimiento: paciente.fechaFallecimiento ?? null,
       fecha_ingreso: paciente.fechaIngreso ?? null,
@@ -126,6 +128,7 @@ export async function actualizarPaciente(id: string, datos: Partial<Paciente>): 
   if (datos.contactoFamiliar !== undefined) payload.contacto_familiar = datos.contactoFamiliar;
   if (datos.fotoUri !== undefined) payload.foto_uri = datos.fotoUri;
   if (datos.riesgoCaida !== undefined) payload.riesgo_caida = datos.riesgoCaida;
+  if (datos.dnr !== undefined) payload.dnr = datos.dnr;
   if (datos.fallecido !== undefined) payload.fallecido = datos.fallecido;
   if (datos.fechaFallecimiento !== undefined) payload.fecha_fallecimiento = datos.fechaFallecimiento;
   if (datos.fechaIngreso !== undefined) payload.fecha_ingreso = datos.fechaIngreso;
