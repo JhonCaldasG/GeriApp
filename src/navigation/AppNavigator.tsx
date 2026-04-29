@@ -373,7 +373,7 @@ function AppTabs() {
           )}
           {!soloAseo && (
             <Tab.Screen name="AgregarCita" component={AgregarCitaScreen}
-              options={({ navigation }) => ({ headerShown: true, ...headerOpts, title: 'Nueva Cita', headerLeft: () => backButton(navigation) })} />
+              options={({ route, navigation }) => ({ headerShown: true, ...headerOpts, title: (route.params as any)?.citaId ? 'Editar Cita' : 'Nueva Cita', headerLeft: () => backButton(navigation) })} />
           )}
 
           {/* Lista de espera — admin */}
