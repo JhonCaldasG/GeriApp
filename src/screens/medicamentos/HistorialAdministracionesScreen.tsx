@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, SectionList, StyleSheet } from 'react-native';
+import { View, SectionList, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,6 +13,7 @@ import EditarAdministracionModal from '../../components/EditarAdministracionModa
 import FeedbackEliminar from '../../components/FeedbackEliminar';
 import { useEliminar } from '../../hooks/useEliminar';
 import { COLORS, FONT_SIZES } from '../../theme';
+import { exportarExcel } from '../../utils/exportarExcel';
 
 type Props = NativeStackScreenProps<MedicamentosStackParamList, 'HistorialAdministraciones'>;
 
@@ -115,6 +116,28 @@ export default function HistorialAdministracionesScreen({ route }: Props) {
     );
   }
 
+  async function handleExportarExcel() {
+    if (adminsPaciente.length === 0) {
+      Alert.alert('Sin datos', 'No hay registros para exportar.');
+      return;
+    }
+    try {
+      await exportarExcel(`administraciones_${pacienteNombre.replace(/\s/g, '_')}`, [{
+        nombre: 'Administraciones',
+        datos: adminsPaciente.map(a => ({
+          Fecha: a.createdAt.slice(0, 10),
+          Hora: a.createdAt.slice(11, 16),
+          Medicamento: (a as any).medicamentoNombre ?? '',
+          Dosis: (a as any).dosis ?? '',
+          'Firmado por': (a as any).firmante ?? '',
+          Rechazado: (a as any).rechazado ? 'Sí' : 'No',
+          'Motivo rechazo': (a as any).motivoRechazo ?? '',
+          Notas: (a as any).notas ?? '',
+        })),
+      }]);
+    } catch (e: any) { Alert.alert('Error', e?.message ?? 'No se pudo exportar.'); }
+  }
+
   const totalAdministradas = adminsPaciente.length;
 
   return (
@@ -122,6 +145,14 @@ export default function HistorialAdministracionesScreen({ route }: Props) {
       <View style={styles.pacienteHeader}>
         <MaterialCommunityIcons name="account" size={20} color="#E65100" />
         <Text style={styles.pacienteNombre}>{pacienteNombre}</Text>
+        <TouchableOpacity
+          style={styles.exportBtn}
+          onPress={handleExportarExcel}
+          activeOpacity={0.75}
+        >
+          <MaterialCommunityIcons name="microsoft-excel" size={18} color={COLORS.secondary} />
+          <Text style={styles.exportBtnTexto}>Exportar Excel</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Resumen */}
@@ -326,4 +357,13 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#EF9A9A',
   },
   rechazadoChipTexto: { fontSize: 10, fontWeight: '700', color: COLORS.danger },
+  exportBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#E8F5E9', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderWidth: 1, borderColor: COLORS.secondary,
+  },
+  exportBtnTexto: {
+    fontSize: FONT_SIZES.xs, fontWeight: '700', color: COLORS.secondary,
+  },
 });

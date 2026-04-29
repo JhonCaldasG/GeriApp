@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../../context/ThemeContext';
 import { COLORS, FONT_SIZES } from '../../theme';
+import { exportarExcel } from '../../utils/exportarExcel';
 
 // ── Donut chart ───────────────────────────────────────────────────────────────
 const CHART_SIZE = 148;
@@ -659,6 +660,23 @@ export default function InfraccionesScreen() {
     });
   }
 
+  async function handleExportarExcel() {
+    if (incumplimientos.length === 0) { Alert.alert('Sin datos', 'No hay infracciones.'); return; }
+    try {
+      await exportarExcel('infracciones', [{
+        nombre: 'Infracciones',
+        datos: incumplimientos.map(i => ({
+          Fecha: i.fecha,
+          Paciente: (i as any).pacienteNombre ?? i.pacienteId,
+          Tipo: i.tipo === 'signos_vitales' ? 'Signos Vitales' : 'Medicamento',
+          Detalle: i.detalle,
+          Estado: (i as any).requerimientoEstado ?? 'pendiente',
+          'Fecha resolución': (i as any).requerimientoResueltoEn?.slice(0, 10) ?? '',
+        })),
+      }]);
+    } catch (e: any) { Alert.alert('Error', e?.message ?? 'No se pudo exportar.'); }
+  }
+
   // Secciones
   const sinJustificar    = incumplimientos.filter(i => !i.requerimientoEstado);
   const pendientes       = incumplimientos.filter(i => i.requerimientoEstado === 'pendiente');
@@ -730,6 +748,15 @@ export default function InfraccionesScreen() {
           <Text style={styles.resumenLabel}>Cerradas</Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        style={styles.exportBtn}
+        onPress={handleExportarExcel}
+        activeOpacity={0.75}
+      >
+        <MaterialCommunityIcons name="microsoft-excel" size={18} color={COLORS.secondary} />
+        <Text style={styles.exportBtnTexto}>Exportar Excel</Text>
+      </TouchableOpacity>
 
       <SectionList
         ref={listRef}
@@ -1105,5 +1132,15 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     color: COLORS.textSecondary,
     fontWeight: '600',
+  },
+  exportBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#E8F5E9', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderWidth: 1, borderColor: COLORS.secondary,
+    marginHorizontal: 16, marginBottom: 8, alignSelf: 'flex-end',
+  },
+  exportBtnTexto: {
+    fontSize: FONT_SIZES.xs, fontWeight: '700', color: COLORS.secondary,
   },
 });
