@@ -63,6 +63,7 @@ import IncidentesScreen from '../screens/pacientes/IncidentesScreen';
 import AusenciasScreen from '../screens/pacientes/AusenciasScreen';
 import GuardiaRapidaScreen from '../screens/GuardiaRapidaScreen';
 import ClinicaDashboardScreen from '../screens/clinica/ClinicaDashboardScreen';
+import EmergenciaScreen from '../screens/EmergenciaScreen';
 
 const Tab            = createBottomTabNavigator();
 const AuthStack      = createNativeStackNavigator();
@@ -341,6 +342,11 @@ function AppTabs() {
           <Tab.Screen name="Notificaciones" component={NotificacionesScreen}
             options={{ headerShown: true, ...headerOpts, title: 'Notificaciones',
               headerLeft: menuLeft, headerRight: undefined }} />
+          <Tab.Screen name="Emergencia" component={EmergenciaScreen}
+            options={{ headerShown: true, ...headerOpts, title: 'Emergencia',
+              headerLeft: menuLeft,
+              headerStyle: { backgroundColor: '#C62828' },
+            }} />
         </Tab.Navigator>
         <CustomDrawer />
       </View>
