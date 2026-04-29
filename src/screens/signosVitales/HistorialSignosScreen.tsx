@@ -18,6 +18,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 import { useEliminar } from '../../hooks/useEliminar';
 import FeedbackEliminar from '../../components/FeedbackEliminar';
+import { exportarExcel } from '../../utils/exportarExcel';
 
 type Props = NativeStackScreenProps<SignosStackParamList, 'HistorialSignos'>;
 
@@ -233,6 +234,34 @@ export default function HistorialSignosScreen({ navigation, route }: Props) {
     );
   }
 
+  async function handleExportarExcel() {
+    if (signos.length === 0) {
+      Alert.alert('Sin datos', 'No hay registros para exportar con el filtro actual.');
+      return;
+    }
+    try {
+      await exportarExcel(`signos_${pacienteNombre.replace(/\s/g, '_')}`, [{
+        nombre: 'Signos Vitales',
+        datos: signos.map(s => ({
+          Fecha: s.createdAt.slice(0, 10),
+          Hora: s.createdAt.slice(11, 16),
+          Toma: (s as any).tomaNombre ?? '',
+          'P/A Sistólica': s.presionSistolica,
+          'P/A Diastólica': s.presionDiastolica,
+          'Frec. Cardíaca': s.frecuenciaCardiaca,
+          Temperatura: s.temperatura,
+          'SpO2 (%)': s.saturacionOxigeno,
+          'Glucosa': s.glucosa,
+          'Peso (kg)': s.peso,
+          'Registrado por': (s as any).registradoPor ?? '',
+          Observaciones: s.observaciones ?? '',
+        })),
+      }]);
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'No se pudo exportar.');
+    }
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.pacienteHeader}>
@@ -244,6 +273,14 @@ export default function HistorialSignosScreen({ navigation, route }: Props) {
             <Text style={styles.sinHorarioTexto}>Sin horario</Text>
           </View>
         )}
+        <TouchableOpacity
+          style={styles.exportBtn}
+          onPress={handleExportarExcel}
+          activeOpacity={0.75}
+        >
+          <MaterialCommunityIcons name="microsoft-excel" size={18} color={COLORS.secondary} />
+          <Text style={styles.exportBtnTexto}>Exportar Excel</Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -443,4 +480,13 @@ const styles = StyleSheet.create({
   },
   observacionesTexto: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary },
   fab: { position: 'absolute', bottom: 20, right: 16, backgroundColor: COLORS.primary },
+  exportBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#E8F5E9', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderWidth: 1, borderColor: COLORS.secondary,
+  },
+  exportBtnTexto: {
+    fontSize: FONT_SIZES.xs, fontWeight: '700', color: COLORS.secondary,
+  },
 });
