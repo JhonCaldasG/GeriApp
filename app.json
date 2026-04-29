@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Hogar Geriátrico",
+    "slug": "hogar-geriatrico",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1565C0"
+    },
+    "scheme": "hogargeriatrico",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hogargeriatrico.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1565C0"
+      },
+      "package": "com.hogargeriatrico.app",
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.VIBRATE"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [
+            {
+              "scheme": "hogargeriatrico"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#1565C0",
+          "defaultChannel": "default"
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "502e0c7b-9c66-480b-9bc4-00d15ca65314"
+      }
+    }
+  }
+}

@@ -1,0 +1,101 @@
+<h2>Capa 2 — Operativo y Comunicación</h2>
+<p class="subtitle">Módulos nuevos independientes que se agregan a la navegación existente.</p>
+
+<div class="section">
+  <h3>📦 Inventario de Insumos</h3>
+  <div class="mockup">
+    <div class="mockup-header">InventarioScreen</div>
+    <div class="mockup-body">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="background:#FFEBEE;border-radius:8px;padding:10px;flex:1;text-align:center">
+          <div style="font-size:22px;font-weight:bold;color:#C62828">3</div>
+          <div style="font-size:11px;color:#555">Stock bajo</div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:8px;padding:10px;flex:1;text-align:center">
+          <div style="font-size:22px;font-weight:bold;color:#2E7D32">24</div>
+          <div style="font-size:11px;color:#555">OK</div>
+        </div>
+        <div style="background:#E3F2FD;border-radius:8px;padding:10px;flex:1;text-align:center">
+          <div style="font-size:22px;font-weight:bold;color:#1565C0">27</div>
+          <div style="font-size:11px;color:#555">Total</div>
+        </div>
+      </div>
+      <div style="background:#FFEBEE;border-radius:8px;padding:10px;margin-bottom:6px;border-left:4px solid #C62828">
+        <strong>Pañales Talla M</strong> · Quedan: <strong style="color:#C62828">2 unidades</strong> (mín. 10)
+      </div>
+      <div style="background:#FFF8E1;border-radius:8px;padding:10px;margin-bottom:6px;border-left:4px solid #F9A825">
+        <strong>Guantes descartables L</strong> · Quedan: <strong style="color:#F9A825">8 cajas</strong> (mín. 5)
+      </div>
+      <div style="background:#E8F5E9;border-radius:8px;padding:10px;border-left:4px solid #2E7D32">
+        <strong>Gasas estériles</strong> · Quedan: 40 unidades ✓
+      </div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:#555">Categorías: Higiene · Medicamentos · Material médico · Limpieza · Alimentos. Cada ítem tiene: nombre, categoría, stock actual, stock mínimo, unidad. Al llegar al mínimo → notificación al admin.</p>
+</div>
+
+<div class="section">
+  <h3>📅 Agenda de Citas Médicas</h3>
+  <div class="mockup">
+    <div class="mockup-header">CitasMedicasScreen — próximas citas</div>
+    <div class="mockup-body">
+      <div style="background:#fff;border-radius:8px;padding:10px;margin-bottom:6px;border-left:4px solid #1565C0;border:1px solid #ddd">
+        <div style="font-size:12px;color:#1565C0;font-weight:bold">HOY 14:30 · Cardiología</div>
+        <strong>Juan García</strong> · Dr. Martínez
+        <div style="font-size:12px;color:#777">Hospital Central · Llevar estudios previos</div>
+      </div>
+      <div style="background:#fff;border-radius:8px;padding:10px;margin-bottom:6px;border-left:4px solid #9C27B0;border:1px solid #ddd">
+        <div style="font-size:12px;color:#9C27B0;font-weight:bold">MIÉ 30/04 · Traumatología</div>
+        <strong>Rosa Pérez</strong> · Dr. López
+        <div style="font-size:12px;color:#777">Clínica Norte · Control de cadera</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:#555">Cita tiene: paciente, especialidad, médico, fecha/hora, lugar, observaciones, estado (pendiente/realizada/cancelada). Notificación al personal 24hs antes.</p>
+</div>
+
+<div class="section">
+  <h3>⏳ Lista de Espera</h3>
+  <p style="font-size:13px;color:#555">Registro de potenciales ingresos: nombre, contacto, diagnóstico preliminar, fecha de solicitud, prioridad (urgente/normal), estado (en espera/admitido/descartado). Solo visible para admin.</p>
+</div>
+
+<div class="section">
+  <h3>🕐 Control de Asistencia del Personal</h3>
+  <div class="mockup">
+    <div class="mockup-header">AsistenciaScreen</div>
+    <div class="mockup-body">
+      <div style="background:#E8F5E9;border-radius:8px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <div><strong>María Fernández</strong> <span style="font-size:12px;color:#555">Enfermera</span></div>
+        <div style="text-align:right"><span style="background:#2E7D32;color:#fff;padding:2px 8px;border-radius:10px;font-size:12px">PRESENTE</span><div style="font-size:11px;color:#777">Entrada: 07:02</div></div>
+      </div>
+      <div style="background:#FFEBEE;border-radius:8px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Carlos Ruiz</strong> <span style="font-size:12px;color:#555">Enfermero</span></div>
+        <div><span style="background:#C62828;color:#fff;padding:2px 8px;border-radius:10px;font-size:12px">AUSENTE</span></div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:#555">Registro manual de entrada/salida por el admin. Historial por empleado. Exportable a PDF mensual.</p>
+</div>
+
+<div class="section">
+  <h3>📝 Nota de Entrega de Turno (Handover)</h3>
+  <div class="mockup">
+    <div class="mockup-header">HandoverScreen — al finalizar turno</div>
+    <div class="mockup-body">
+      <div style="background:#fff;border-radius:6px;padding:10px;border:1px solid #ddd;margin-bottom:8px">
+        <div style="font-size:12px;color:#777;margin-bottom:6px">Turno Mañana → Tarde · María F. → 28/04/2026</div>
+        <div style="font-size:13px;margin-bottom:4px">📍 <strong>Novedades:</strong> Juan García con fiebre 38.2° desde las 10hs. Se avisó al médico.</div>
+        <div style="font-size:13px;margin-bottom:4px">💊 <strong>Medicamentos:</strong> Rosa Pérez rechazó la pastilla de las 12hs.</div>
+        <div style="font-size:13px">⚠️ <strong>Pendientes:</strong> Cura de úlcera de Carlos M. a las 16hs.</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:#555">Secciones: Novedades del turno, pendientes para el siguiente turno, pacientes con cambios. El turno entrante la ve al abrir la app. Se guarda histórico.</p>
+</div>
+
+<div class="section">
+  <h3>📣 Mensajes Internos</h3>
+  <p style="font-size:13px;color:#555">Tablón de anuncios del hogar. Admin publica mensajes (reuniones, cambios de protocolo, avisos). El personal los ve en el tab "Más" con badge de no leídos. No es chat — solo publicación unidireccional del admin.</p>
+</div>
+
+<p class="subtitle">¿Este diseño para la Capa 2 tiene sentido? ¿Algo a ajustar?</p>
