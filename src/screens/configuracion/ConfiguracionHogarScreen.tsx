@@ -4,6 +4,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Text, TextInput, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useHogar } from '../../context/HogarContext';
 import { useAppTheme } from '../../context/ThemeContext';
 import { supabase, uploadImagen } from '../../lib/supabase';
@@ -15,6 +17,8 @@ export default function ConfiguracionHogarScreen() {
   const { hogar, actualizarHogar } = useHogar();
   const { isDark, toggleTheme, colors } = useAppTheme();
   const [guardando, setGuardando] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricSupported, setBiometricSupported] = useState(false);
 
   const [nombre, setNombre] = useState('');
   const [direccion, setDireccion] = useState('');
@@ -34,6 +38,13 @@ export default function ConfiguracionHogarScreen() {
     setCiudad(hogar.ciudad);
     setProvincia(hogar.provincia);
     setLogoUri(hogar.logoUri);
+    (async () => {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      setBiometricSupported(hasHardware && isEnrolled);
+      const enabled = await AsyncStorage.getItem('@biometric_enabled');
+      setBiometricEnabled(enabled === 'true');
+    })();
   }, [hogar]);
 
   async function seleccionarFoto() {
@@ -217,6 +228,26 @@ export default function ConfiguracionHogarScreen() {
             thumbColor={isDark ? '#CE93D8' : COLORS.surface}
           />
         </View>
+
+        {/* Acceso biométrico */}
+        {biometricSupported && (
+          <View style={[styles.temaCard, { backgroundColor: colors.surface }]}>
+            <MaterialCommunityIcons name="fingerprint" size={22} color={biometricEnabled ? COLORS.primary : COLORS.textSecondary} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.temaTitulo}>Acceso biométrico</Text>
+              <Text style={styles.temaSubtitulo}>Huella dactilar o Face ID para iniciar sesión</Text>
+            </View>
+            <Switch
+              value={biometricEnabled}
+              onValueChange={async (val) => {
+                setBiometricEnabled(val);
+                await AsyncStorage.setItem('@biometric_enabled', String(val));
+              }}
+              trackColor={{ false: COLORS.border, true: COLORS.primary + '80' }}
+              thumbColor={biometricEnabled ? COLORS.primary : COLORS.surface}
+            />
+          </View>
+        )}
     </KeyboardAwareScrollView>
   );
 }

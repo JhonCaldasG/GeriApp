@@ -109,6 +109,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (usuarioStr: string, password: string): Promise<boolean> => {
+    // Biometric path: restore last saved session (password is empty string)
+    if (!password) {
+      const sesion = await AsyncStorage.getItem(SESSION_KEY);
+      if (sesion) {
+        try {
+          const s = JSON.parse(sesion);
+          const usuarios = await obtenerUsuarios();
+          const u = usuarios.find(usr => usr.id === s.id && usr.activo);
+          if (u) {
+            setUsuario(u);
+            setUltimoIngreso(u.ultimoIngreso ?? null);
+            startInactivityTimer();
+            return true;
+          }
+        } catch { /* ignore */ }
+      }
+      return false;
+    }
+
     const encontrado = await loginStorage(usuarioStr, password);
     if (encontrado) {
       setUsuario(encontrado);

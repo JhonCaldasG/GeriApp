@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, StyleSheet, Image, StatusBar, TouchableOpacity,
   TextInput, KeyboardAvoidingView, Platform, ScrollView,
@@ -8,6 +8,8 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { useAuth } from '../../context/AuthContext';
 import { useHogar } from '../../context/HogarContext';
 import { useHogarAcceso } from '../../context/HogarAccesoContext';
@@ -28,6 +30,33 @@ export default function LoginScreen() {
   const [focusUsuario, setFocusUsuario] = useState(false);
   const [focusPass, setFocusPass]       = useState(false);
   const [verDefaults, setVerDefaults]   = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      const enabled = await AsyncStorage.getItem('@biometric_enabled');
+      setBiometricAvailable(hasHardware && isEnrolled && enabled === 'true');
+    })();
+  }, []);
+
+  async function handleBiometricLogin() {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Confirmar identidad',
+      fallbackLabel: 'Usar contraseña',
+    });
+    if (!result.success) return;
+    const sesion = await AsyncStorage.getItem('@sesion_usuario');
+    if (!sesion) {
+      Alert.alert('Sin sesión previa', 'Iniciá sesión con usuario y contraseña primero.');
+      return;
+    }
+    const ok = await login(JSON.parse(sesion).usuario ?? '', '');
+    if (!ok) {
+      Alert.alert('Error', 'No se pudo restaurar la sesión. Iniciá sesión manualmente.');
+    }
+  }
 
   async function handleLogin() {
     if (!usuario.trim() || !password.trim()) {
@@ -157,6 +186,14 @@ export default function LoginScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {/* Biometría */}
+          {biometricAvailable && (
+            <TouchableOpacity style={styles.biometricBtn} onPress={handleBiometricLogin}>
+              <MaterialCommunityIcons name="fingerprint" size={24} color={COLORS.primary} />
+              <Text style={styles.biometricTexto}>Entrar con biometría</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Separador */}
           <View style={styles.separador}>
@@ -314,6 +351,24 @@ const styles = StyleSheet.create({
   },
   btnLoginTexto: {
     fontSize: FONT_SIZES.md, fontWeight: '700', color: COLORS.white,
+  },
+
+  // ── Botón biométrico ─────────────────────────────────────────────────────
+  biometricBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    marginTop: 12,
+  },
+  biometricTexto: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
 
   // ── Separador ────────────────────────────────────────────────────────────
