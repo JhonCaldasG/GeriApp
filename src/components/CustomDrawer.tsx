@@ -93,6 +93,7 @@ export default function CustomDrawer() {
       { name: 'ClinicaDashboard', label: 'Estado Clínico', icono: 'stethoscope', color: '#C62828', separator: true },
       { name: 'Infracciones', label: 'Infracciones', icono: 'alert-circle-outline', color: '#C62828' },
     ] : []),
+    { name: 'Protocolos',     label: 'Protocolos',      icono: 'clipboard-list', color: '#B71C1C' },
     { name: 'Notificaciones', label: 'Notificaciones', icono: 'bell-outline', color: '#1565C0', badge: noLeidas },
     ...(isAdmin ? [
       { name: 'Turnos',        label: 'Turnos Enfermería', icono: 'calendar-clock', color: '#00838F', separator: true },
