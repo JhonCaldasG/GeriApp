@@ -72,6 +72,8 @@ import ListaEsperaScreen from '../screens/listaEspera/ListaEsperaScreen';
 import AsistenciaScreen from '../screens/asistencia/AsistenciaScreen';
 import HandoverScreen from '../screens/turnos/HandoverScreen';
 import MensajesScreen from '../screens/mensajes/MensajesScreen';
+import ReportesMensualesScreen from '../screens/reportes/ReportesMensualesScreen';
+import EstadisticasScreen from '../screens/reportes/EstadisticasScreen';
 
 const Tab            = createBottomTabNavigator();
 const AuthStack      = createNativeStackNavigator();
@@ -398,6 +400,18 @@ function AppTabs() {
           {!soloAseo && (
             <Tab.Screen name="Mensajes" component={MensajesScreen}
               options={{ headerShown: true, ...headerOpts, title: 'Mensajes Internos', headerLeft: menuLeft }} />
+          )}
+
+          {/* Reportes mensuales — admin + enfermero */}
+          {!soloAseo && (
+            <Tab.Screen name="ReportesMensuales" component={ReportesMensualesScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Reportes Mensuales', headerLeft: menuLeft }} />
+          )}
+
+          {/* Estadísticas — admin */}
+          {isAdmin && (
+            <Tab.Screen name="Estadisticas" component={EstadisticasScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Estadísticas del Hogar', headerLeft: menuLeft }} />
           )}
         </Tab.Navigator>
         <CustomDrawer />

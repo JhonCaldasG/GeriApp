@@ -24,6 +24,7 @@ const MODULOS_COMUNES: ModuloCard[] = [
   { tab: 'Citas', label: 'Citas Médicas', icono: 'calendar-heart', color: '#9C27B0', bg: '#F3E5F5', descripcion: 'Agenda de consultas y estudios' },
   { tab: 'Handover', label: 'Nota de Turno', icono: 'transfer', color: '#6A1B9A', bg: '#EDE7F6', descripcion: 'Entrega de turno entre personal' },
   { tab: 'Mensajes', label: 'Mensajes', icono: 'bulletin-board', color: '#0277BD', bg: '#E1F5FE', descripcion: 'Tablón de anuncios interno' },
+  { tab: 'ReportesMensuales', label: 'Reportes', icono: 'file-chart', color: '#1565C0', bg: '#E3F2FD', descripcion: 'Reportes mensuales por paciente' },
 ];
 
 const MODULOS_ADMIN: ModuloCard[] = [
@@ -31,6 +32,7 @@ const MODULOS_ADMIN: ModuloCard[] = [
   { tab: 'Configuracion', label: 'Configuración', icono: 'cog', color: '#E65100', bg: '#FFF3E0', descripcion: 'Datos del hogar geriátrico' },
   { tab: 'ListaEspera', label: 'Lista de Espera', icono: 'account-clock', color: '#AD1457', bg: '#FCE4EC', descripcion: 'Pacientes pendientes de ingreso' },
   { tab: 'Asistencia', label: 'Asistencia', icono: 'clipboard-account', color: '#2E7D32', bg: '#E8F5E9', descripcion: 'Control de asistencia del personal' },
+  { tab: 'Estadisticas', label: 'Estadísticas', icono: 'chart-bar', color: '#2E7D32', bg: '#E8F5E9', descripcion: 'Métricas globales del hogar' },
 ];
 
 export default function MasScreen() {
