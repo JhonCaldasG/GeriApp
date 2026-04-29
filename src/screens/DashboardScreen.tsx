@@ -701,15 +701,6 @@ export default function DashboardScreen() {
             )}
           </View>
 
-          {/* Botón EMERGENCIA */}
-          <TouchableOpacity
-            style={styles.emergenciaBtn}
-            onPress={() => (navigation as any).navigate('Emergencia')}
-            activeOpacity={0.85}
-          >
-            <MaterialCommunityIcons name="phone-alert" size={24} color="#fff" />
-            <Text style={styles.emergenciaBtnTexto}>EMERGENCIA</Text>
-          </TouchableOpacity>
         </>
       )}
 
@@ -1082,22 +1073,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     lineHeight: 15,
-  },
-  emergenciaBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: COLORS.danger,
-    borderRadius: 14,
-    paddingVertical: 16,
-    marginBottom: 16,
-    elevation: 3,
-  },
-  emergenciaBtnTexto: {
-    color: '#fff',
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '900',
-    letterSpacing: 1,
   },
 });

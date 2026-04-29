@@ -1,4 +1,4 @@
-// src/screens/EmergenciaScreen.tsx
+// src/screens/ProtocolosScreen.tsx
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -61,7 +61,7 @@ const PROTOCOLOS: Protocolo[] = [
   },
 ];
 
-export default function EmergenciaScreen() {
+export default function ProtocolosScreen() {
   const insets = useSafeAreaInsets();
   const { hogar } = useHogar();
   const { colors } = useAppTheme();

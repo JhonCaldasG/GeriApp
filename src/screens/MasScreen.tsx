@@ -25,6 +25,7 @@ const MODULOS_COMUNES: ModuloCard[] = [
   { tab: 'Handover', label: 'Nota de Turno', icono: 'transfer', color: '#6A1B9A', bg: '#EDE7F6', descripcion: 'Entrega de turno entre personal' },
   { tab: 'Mensajes', label: 'Mensajes', icono: 'bulletin-board', color: '#0277BD', bg: '#E1F5FE', descripcion: 'Tablón de anuncios interno' },
   { tab: 'ReportesMensuales', label: 'Reportes', icono: 'file-chart', color: '#1565C0', bg: '#E3F2FD', descripcion: 'Reportes mensuales por paciente' },
+  { tab: 'Protocolos', label: 'Protocolos', icono: 'clipboard-list', color: '#B71C1C', bg: '#FFEBEE', descripcion: 'Protocolos de actuación ante emergencias' },
 ];
 
 const MODULOS_ADMIN: ModuloCard[] = [

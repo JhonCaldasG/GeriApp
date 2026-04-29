@@ -63,7 +63,7 @@ import IncidentesScreen from '../screens/pacientes/IncidentesScreen';
 import AusenciasScreen from '../screens/pacientes/AusenciasScreen';
 import GuardiaRapidaScreen from '../screens/GuardiaRapidaScreen';
 import ClinicaDashboardScreen from '../screens/clinica/ClinicaDashboardScreen';
-import EmergenciaScreen from '../screens/EmergenciaScreen';
+import ProtocolosScreen from '../screens/ProtocolosScreen';
 import InventarioScreen from '../screens/inventario/InventarioScreen';
 import AgregarInsumoScreen from '../screens/inventario/AgregarInsumoScreen';
 import CitasMedicasScreen from '../screens/citas/CitasMedicasScreen';
@@ -352,10 +352,9 @@ function AppTabs() {
           <Tab.Screen name="Notificaciones" component={NotificacionesScreen}
             options={{ headerShown: true, ...headerOpts, title: 'Notificaciones',
               headerLeft: menuLeft, headerRight: undefined }} />
-          <Tab.Screen name="Emergencia" component={EmergenciaScreen}
-            options={{ headerShown: true, ...headerOpts, title: 'Emergencia',
+          <Tab.Screen name="Protocolos" component={ProtocolosScreen}
+            options={{ headerShown: true, ...headerOpts, title: 'Protocolos',
               headerLeft: menuLeft,
-              headerStyle: { backgroundColor: '#C62828' },
             }} />
 
           {/* Inventario — todos los roles */}
