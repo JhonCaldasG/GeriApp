@@ -240,22 +240,46 @@ export default function HistorialSignosScreen({ navigation, route }: Props) {
       return;
     }
     try {
+      const emision = new Date().toLocaleString('es-AR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
+
+      const encabezado: any[][] = [
+        ['REGISTRO DE SIGNOS VITALES'],
+        [],
+        ['Paciente:', pacienteNombre],
+        ['Total registros:', signos.length],
+        ['Emitido:', emision],
+        [],
+      ];
+
+      const headers = [
+        'N°', 'Fecha', 'Hora', 'Toma',
+        'P/A Sistólica', 'P/A Diastólica', 'Frec. Cardíaca',
+        'Temperatura (°C)', 'SpO2 (%)', 'Glucosa', 'Peso (kg)',
+        'Registrado por', 'Observaciones',
+      ];
+
+      const filas = signos.map((s, i) => [
+        i + 1,
+        s.createdAt.slice(0, 10),
+        s.createdAt.slice(11, 16),
+        (s as any).tomaNombre ?? '',
+        s.presionSistolica ?? '',
+        s.presionDiastolica ?? '',
+        s.frecuenciaCardiaca ?? '',
+        s.temperatura ?? '',
+        s.saturacionOxigeno ?? '',
+        s.glucosa ?? '',
+        s.peso ?? '',
+        (s as any).registradoPor ?? '',
+        s.observaciones ?? '',
+      ]);
+
       await exportarExcel(`signos_${pacienteNombre.replace(/\s/g, '_')}`, [{
         nombre: 'Signos Vitales',
-        datos: signos.map(s => ({
-          Fecha: s.createdAt.slice(0, 10),
-          Hora: s.createdAt.slice(11, 16),
-          Toma: (s as any).tomaNombre ?? '',
-          'P/A Sistólica': s.presionSistolica,
-          'P/A Diastólica': s.presionDiastolica,
-          'Frec. Cardíaca': s.frecuenciaCardiaca,
-          Temperatura: s.temperatura,
-          'SpO2 (%)': s.saturacionOxigeno,
-          'Glucosa': s.glucosa,
-          'Peso (kg)': s.peso,
-          'Registrado por': (s as any).registradoPor ?? '',
-          Observaciones: s.observaciones ?? '',
-        })),
+        filas: [...encabezado, headers, ...filas],
       }]);
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'No se pudo exportar.');

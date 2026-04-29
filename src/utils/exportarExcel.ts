@@ -4,14 +4,17 @@ import * as Sharing from 'expo-sharing';
 
 export interface ExcelHoja {
   nombre: string;
-  datos: Record<string, any>[];
+  datos?: Record<string, any>[];
+  filas?: any[][];  // array-of-arrays para hojas con sección de encabezado + tabla
 }
 
 export async function exportarExcel(nombre: string, hojas: ExcelHoja[]): Promise<void> {
   const wb = XLSX.utils.book_new();
 
   hojas.forEach(hoja => {
-    const ws = XLSX.utils.json_to_sheet(hoja.datos);
+    const ws = hoja.filas
+      ? XLSX.utils.aoa_to_sheet(hoja.filas)
+      : XLSX.utils.json_to_sheet(hoja.datos ?? []);
     XLSX.utils.book_append_sheet(wb, ws, hoja.nombre.slice(0, 31));
   });
 
