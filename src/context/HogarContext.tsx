@@ -14,6 +14,7 @@ export function HogarProvider({ children }: { children: ReactNode }) {
     nombre: 'Hogar Geriátrico',
     direccion: '',
     telefono: '',
+    telefonoEmergencia: '',
     email: '',
     ciudad: '',
     provincia: '',

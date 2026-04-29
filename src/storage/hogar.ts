@@ -4,6 +4,7 @@ export interface HogarInfo {
   nombre: string;
   direccion: string;
   telefono: string;
+  telefonoEmergencia: string;
   email: string;
   ciudad: string;
   provincia: string;
@@ -14,6 +15,7 @@ const DEFAULT: HogarInfo = {
   nombre: 'Hogar Geriátrico',
   direccion: '',
   telefono: '',
+  telefonoEmergencia: '',
   email: '',
   ciudad: '',
   provincia: '',
@@ -25,6 +27,7 @@ function rowToHogar(row: any): HogarInfo {
     nombre: row.nombre ?? DEFAULT.nombre,
     direccion: row.direccion ?? '',
     telefono: row.telefono ?? '',
+    telefonoEmergencia: row.telefono_emergencia ?? '',
     email: row.email ?? '',
     ciudad: row.ciudad ?? '',
     provincia: row.provincia ?? '',
@@ -50,6 +53,7 @@ export async function guardarHogar(info: HogarInfo): Promise<void> {
       nombre: info.nombre,
       direccion: info.direccion,
       telefono: info.telefono,
+      telefono_emergencia: info.telefonoEmergencia,
       email: info.email,
       ciudad: info.ciudad,
       provincia: info.provincia,

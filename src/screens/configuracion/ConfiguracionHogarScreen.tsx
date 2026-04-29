@@ -19,6 +19,7 @@ export default function ConfiguracionHogarScreen() {
   const [nombre, setNombre] = useState('');
   const [direccion, setDireccion] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [telefonoEmergencia, setTelefonoEmergencia] = useState('');
   const [email, setEmail] = useState('');
   const [ciudad, setCiudad] = useState('');
   const [provincia, setProvincia] = useState('');
@@ -28,6 +29,7 @@ export default function ConfiguracionHogarScreen() {
     setNombre(hogar.nombre);
     setDireccion(hogar.direccion);
     setTelefono(hogar.telefono);
+    setTelefonoEmergencia(hogar.telefonoEmergencia);
     setEmail(hogar.email);
     setCiudad(hogar.ciudad);
     setProvincia(hogar.provincia);
@@ -68,6 +70,7 @@ export default function ConfiguracionHogarScreen() {
       nombre: nombre.trim(),
       direccion: direccion.trim(),
       telefono: telefono.trim(),
+      telefonoEmergencia: telefonoEmergencia.trim(),
       email: email.trim(),
       ciudad: ciudad.trim(),
       provincia: provincia.trim(),
@@ -162,6 +165,18 @@ export default function ConfiguracionHogarScreen() {
           outlineColor={COLORS.border}
           activeOutlineColor={COLORS.primary}
           left={<TextInput.Icon icon="phone" />}
+        />
+        <TextInput
+          label="Teléfono de Emergencia"
+          value={telefonoEmergencia}
+          onChangeText={setTelefonoEmergencia}
+          keyboardType="phone-pad"
+          placeholder="Ej: 011-8901-2345"
+          style={styles.input}
+          mode="outlined"
+          outlineColor={COLORS.border}
+          activeOutlineColor={COLORS.primary}
+          left={<TextInput.Icon icon="phone-alert" />}
         />
         <TextInput
           label="Email"
