@@ -90,15 +90,25 @@ export default function CustomDrawer() {
       { name: 'Aseo', label: 'Aseo y Limpieza', icono: 'broom', color: '#0277BD', separator: !soloAseo, rootScreen: 'PacientesAseo' },
     ] : []),
     ...(!soloAseo ? [
-      { name: 'ClinicaDashboard', label: 'Estado Clínico', icono: 'stethoscope', color: '#C62828', separator: true },
-      { name: 'Infracciones', label: 'Infracciones', icono: 'alert-circle-outline', color: '#C62828' },
+      { name: 'ClinicaDashboard', label: 'Estado Clínico',   icono: 'stethoscope',          color: '#C62828', separator: true },
+      { name: 'Infracciones',     label: 'Infracciones',     icono: 'alert-circle-outline', color: '#C62828' },
+    ] : []),
+    ...(!soloAseo ? [
+      { name: 'Inventario',        label: 'Inventario',       icono: 'package-variant',      color: '#E65100', separator: true },
+      { name: 'Citas',             label: 'Citas Médicas',    icono: 'calendar-heart',       color: '#9C27B0' },
+      { name: 'Handover',          label: 'Nota de Turno',    icono: 'transfer',             color: '#6A1B9A' },
+      { name: 'Mensajes',          label: 'Mensajes',         icono: 'bulletin-board',       color: '#0277BD' },
+      { name: 'ReportesMensuales', label: 'Reportes',         icono: 'file-chart',           color: '#1565C0' },
     ] : []),
     { name: 'Protocolos',     label: 'Protocolos',      icono: 'clipboard-list', color: '#B71C1C' },
-    { name: 'Notificaciones', label: 'Notificaciones', icono: 'bell-outline', color: '#1565C0', badge: noLeidas },
+    { name: 'Notificaciones', label: 'Notificaciones',  icono: 'bell-outline',   color: '#1565C0', badge: noLeidas },
     ...(isAdmin ? [
       { name: 'Turnos',        label: 'Turnos Enfermería', icono: 'calendar-clock', color: '#00838F', separator: true },
-      { name: 'Usuarios',      label: 'Usuarios',          icono: 'account-cog',   color: '#6A1B9A' },
-      { name: 'Configuracion', label: 'Configuración',     icono: 'cog',           color: '#37474F' },
+      { name: 'ListaEspera',   label: 'Lista de Espera',   icono: 'account-clock',  color: '#AD1457' },
+      { name: 'Asistencia',    label: 'Asistencia',        icono: 'clipboard-account', color: '#2E7D32' },
+      { name: 'Estadisticas',  label: 'Estadísticas',      icono: 'chart-bar',      color: '#2E7D32' },
+      { name: 'Usuarios',      label: 'Usuarios',          icono: 'account-cog',    color: '#6A1B9A' },
+      { name: 'Configuracion', label: 'Configuración',     icono: 'cog',            color: '#37474F' },
     ] : []),
   ];
 
