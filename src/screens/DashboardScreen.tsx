@@ -16,6 +16,7 @@ import { formatearFechaHora } from '../storage';
 import { SignoVital, Paciente, Incumplimiento } from '../types';
 import { obtenerIncumplimientos, registrarIncumplimiento } from '../storage/incumplimientos';
 import { crearNotificacion } from '../storage/notificaciones';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Tarjeta de estadística clickable ──────────────────────────────────────────
 interface StatCardProps {
@@ -108,7 +109,7 @@ export default function DashboardScreen() {
 
   // Ref para evitar notificar el mismo incumplimiento más de una vez por sesión
   const notificadosRef = useRef<Set<string>>(new Set());
-  const cumpleaniosNotifRef = useRef<Set<string>>(new Set());
+  const cumpleaniosNotifRef = useRef<Set<string> | null>(null);
   // Guard: verificación histórica solo una vez por día
 
 
@@ -258,33 +259,57 @@ export default function DashboardScreen() {
     }
   }, [pacientes, horarios, signosVitales, medicamentosActivos, administraciones, isAseo, cargarIncumplimientos]);
 
-  // Alerta de cumpleaños (7 días de anticipación)
+  // Alerta de cumpleaños (7 días de anticipación) — persiste en AsyncStorage para no duplicar entre sesiones
   useEffect(() => {
     if (isAseo || pacientes.length === 0) return;
-    const hoy = new Date();
-    const hoyISO = hoy.toISOString().slice(0, 10);
 
-    pacientes.filter(p => !p.fallecido && p.fechaNacimiento).forEach(p => {
-      const nacimientoStr = p.fechaNacimiento.slice(5, 10); // MM-DD
-      const cumpleAnio = new Date(`${hoy.getFullYear()}-${nacimientoStr}`);
-      const diffDias = Math.round((cumpleAnio.getTime() - hoy.getTime()) / 86400000);
-      if (diffDias < 0 || diffDias > 7) return;
+    async function procesarCumpleanos() {
+      const hoy = new Date();
+      const hoyISO = hoy.toISOString().slice(0, 10);
+      const storageKey = `cumpleanos_notif_${hoyISO}`;
 
-      const key = `cumple-${p.id}-${hoyISO}`;
-      if (cumpleaniosNotifRef.current.has(key)) return;
-      cumpleaniosNotifRef.current.add(key);
+      // Cargar el set persistido para hoy (solo la primera vez por mount)
+      if (cumpleaniosNotifRef.current === null) {
+        try {
+          const raw = await AsyncStorage.getItem(storageKey);
+          cumpleaniosNotifRef.current = new Set(raw ? JSON.parse(raw) : []);
+        } catch {
+          cumpleaniosNotifRef.current = new Set();
+        }
+      }
 
-      const mensaje = diffDias === 0
-        ? `¡Hoy es el cumpleaños de ${p.nombre} ${p.apellido}!`
-        : `${p.nombre} ${p.apellido} cumple años en ${diffDias} día${diffDias !== 1 ? 's' : ''} (${nacimientoStr.split('-').reverse().join('/')})`;
+      const notificados = cumpleaniosNotifRef.current;
+      const nuevos: string[] = [];
 
-      crearNotificacion({
-        tipo: 'sistema',
-        titulo: diffDias === 0 ? '🎂 Cumpleaños hoy' : '🎂 Próximo cumpleaños',
-        mensaje,
-        paraRol: 'admin',
-      }).catch(() => {});
-    });
+      pacientes.filter(p => !p.fallecido && p.fechaNacimiento).forEach(p => {
+        const nacimientoStr = p.fechaNacimiento.slice(5, 10); // MM-DD
+        const cumpleAnio = new Date(`${hoy.getFullYear()}-${nacimientoStr}`);
+        const diffDias = Math.round((cumpleAnio.getTime() - hoy.getTime()) / 86400000);
+        if (diffDias < 0 || diffDias > 7) return;
+
+        const key = `${p.id}`;
+        if (notificados.has(key)) return;
+        notificados.add(key);
+        nuevos.push(key);
+
+        const mensaje = diffDias === 0
+          ? `¡Hoy es el cumpleaños de ${p.nombre} ${p.apellido}!`
+          : `${p.nombre} ${p.apellido} cumple años en ${diffDias} día${diffDias !== 1 ? 's' : ''} (${nacimientoStr.split('-').reverse().join('/')})`;
+
+        crearNotificacion({
+          tipo: 'sistema',
+          titulo: diffDias === 0 ? '🎂 Cumpleaños hoy' : '🎂 Próximo cumpleaños',
+          mensaje,
+          paraRol: 'admin',
+        }).catch(() => {});
+      });
+
+      if (nuevos.length > 0) {
+        AsyncStorage.setItem(storageKey, JSON.stringify([...notificados])).catch(() => {});
+      }
+    }
+
+    procesarCumpleanos();
   }, [pacientes, isAseo]);
 
   const bannerOpacity = useRef(new Animated.Value(0)).current;
