@@ -143,6 +143,12 @@ export default function PerfilPacienteScreen({ navigation, route }: Props) {
         )}
         <Text style={styles.nombre}>{paciente.apellido}, {paciente.nombre}</Text>
         <Text style={styles.subNombre}>{edad} años  •  Hab. {paciente.habitacion || 'Sin asignar'}</Text>
+        {paciente.dnr && (
+          <View style={styles.dnrBanner}>
+            <MaterialCommunityIcons name="heart-off" size={18} color="#fff" />
+            <Text style={styles.dnrBannerTexto}>PACIENTE CON ORDEN DNR — No Reanimar</Text>
+          </View>
+        )}
         {paciente.riesgoCaida && (
           <View style={[styles.alertaAlergia, styles.alertaCaida]}>
             <MaterialCommunityIcons name="walk" size={16} color="#E65100" />
@@ -400,6 +406,21 @@ const styles = StyleSheet.create({
   },
   alertaAlergiaTexto: { color: COLORS.danger, fontSize: FONT_SIZES.sm, fontWeight: '600' },
   alertaCaida: { backgroundColor: '#FFF8E1' },
+  dnrBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.danger,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  dnrBannerTexto: {
+    color: '#fff',
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '800',
+    flex: 1,
+  },
   seccion: {
     fontSize: FONT_SIZES.md,
     fontWeight: '700',

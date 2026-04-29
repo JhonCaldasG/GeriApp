@@ -27,6 +27,7 @@ export default function PacienteCard({ paciente, onPress }: PacienteCardProps) {
   const avatarColor = colorPorId(paciente.id);
 
   const esFallecido = !!paciente.fallecido;
+  const tieneDnr = !!paciente.dnr;
 
   return (
     <TouchableOpacity
@@ -53,6 +54,20 @@ export default function PacienteCard({ paciente, onPress }: PacienteCardProps) {
             {paciente.diagnosticoPrincipal}
           </Text>
         ) : null}
+        {(tieneDnr || paciente.riesgoCaida) && (
+          <View style={{ flexDirection: 'row', gap: 4, marginTop: 4 }}>
+            {tieneDnr && (
+              <View style={styles.badgeDnr}>
+                <Text style={styles.badgeDnrTexto}>DNR</Text>
+              </View>
+            )}
+            {paciente.riesgoCaida && (
+              <View style={styles.badgeCaida}>
+                <Text style={styles.badgeCaidaTexto}>⚠ Caída</Text>
+              </View>
+            )}
+          </View>
+        )}
         {esFallecido && (
           <Text style={styles.badgeFallecido}>Fallecido</Text>
         )}
@@ -127,5 +142,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#888',
     marginTop: 3,
+  },
+  badgeDnr: {
+    backgroundColor: COLORS.danger,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  badgeDnrTexto: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  badgeCaida: {
+    backgroundColor: COLORS.warning + '25',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: COLORS.warning,
+  },
+  badgeCaidaTexto: {
+    color: COLORS.warning,
+    fontSize: 10,
+    fontWeight: '700',
   },
 });
