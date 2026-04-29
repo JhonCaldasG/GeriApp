@@ -90,7 +90,7 @@ function formatearProximaToma(proxima: Date): { texto: string; vencida: boolean 
 
 export default function ListaMedicamentosScreen({ navigation, route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
-  const { medicamentos, cargarMedicamentos, eliminarMedicamento, administraciones, cargarAdministraciones } = useApp();
+  const { medicamentos, cargarMedicamentos, eliminarMedicamento, administraciones, cargarAdministraciones, pacientes } = useApp();
   const { isAdmin } = useAuth();
   const { colors } = useAppTheme();
 
@@ -165,6 +165,8 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
     if (historial.length === 0) return null;
     return { texto: formatearFechaHora(historial[0].createdAt), iso: historial[0].createdAt };
   }
+
+  const paciente = pacientes.find(p => p.id === pacienteId);
 
   function confirmarEliminar(id: string, nombre: string) {
     ejecutarEliminacion(
@@ -326,6 +328,16 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
         <MaterialCommunityIcons name="account" size={20} color="#E65100" />
         <Text style={styles.pacienteNombre}>{pacienteNombre}</Text>
       </View>
+
+      {paciente?.alergias?.trim() ? (
+        <View style={styles.alergiaBanner}>
+          <MaterialCommunityIcons name="alert-circle" size={18} color="#E65100" />
+          <Text style={styles.alergiaTexto} numberOfLines={2}>
+            <Text style={{ fontWeight: '800' }}>Alergias: </Text>
+            {paciente.alergias.trim()}
+          </Text>
+        </View>
+      ) : null}
 
       <FlatList
         data={[...activos, ...inactivos]}
@@ -532,4 +544,20 @@ const styles = StyleSheet.create({
   },
   chipDosisCompletaTexto: { fontSize: FONT_SIZES.xs, color: COLORS.secondaryLight, fontWeight: '700' },
   fab: { position: 'absolute', bottom: 20, right: 16, backgroundColor: COLORS.warningLight },
+  alergiaBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#FFCC80',
+  },
+  alergiaTexto: {
+    flex: 1,
+    fontSize: FONT_SIZES.sm,
+    color: '#E65100',
+  },
 });

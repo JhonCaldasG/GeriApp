@@ -455,7 +455,7 @@ function formatConteo(minutos: number): string {
 export default function RegistrarSignosScreen({ navigation, route }: Props) {
   const { pacienteId, pacienteNombre, signoId, tomaInicial, fechaInfraccion } = route.params;
   const modoEdicion = !!signoId;
-  const { agregarSigno, actualizarSigno, horarios, cargarHorarios, signosVitales, cargarSignos } = useApp();
+  const { agregarSigno, actualizarSigno, horarios, cargarHorarios, signosVitales, cargarSignos, pacientes } = useApp();
   const { usuario } = useAuth();
   const [guardando, setGuardando] = useState(false);
   const [firmaVisible, setFirmaVisible] = useState(false);
@@ -773,6 +773,8 @@ export default function RegistrarSignosScreen({ navigation, route }: Props) {
     }
   }
 
+  const paciente = pacientes.find(p => p.id === pacienteId);
+
   return (
     <>
     <KeyboardAwareScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" enableOnAndroid extraScrollHeight={20}>
@@ -780,6 +782,16 @@ export default function RegistrarSignosScreen({ navigation, route }: Props) {
         <MaterialCommunityIcons name="account" size={22} color={COLORS.primary} />
         <Text style={styles.pacienteNombre}>{pacienteNombre}</Text>
       </View>
+
+      {paciente?.alergias?.trim() ? (
+        <View style={styles.alergiaBanner}>
+          <MaterialCommunityIcons name="alert-circle" size={18} color="#E65100" />
+          <Text style={styles.alergiaTexto} numberOfLines={2}>
+            <Text style={{ fontWeight: '800' }}>Alergias: </Text>
+            {paciente.alergias.trim()}
+          </Text>
+        </View>
+      ) : null}
 
       {tomasPaciente.length > 0 && (
         <View style={[styles.tomaContainer, mostrarErrores && !tomaSeleccionada && styles.tomaContainerError, tomaAutoSel && styles.tomaContainerAuto]}>
@@ -1129,4 +1141,20 @@ const styles = StyleSheet.create({
   tomaChipHora: { fontSize: FONT_SIZES.xs, color: COLORS.textSecondary },
   tomaChipTextoActivo: { color: COLORS.white },
   tomaChipTextoRegistrada: { color: '#888' },
+  alergiaBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#FFCC80',
+  },
+  alergiaTexto: {
+    flex: 1,
+    fontSize: FONT_SIZES.sm,
+    color: '#E65100',
+  },
 });
