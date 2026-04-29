@@ -313,3 +313,100 @@ export type PacientesStackParamList = {
   Incidentes: { pacienteId: string; pacienteNombre: string };
   Ausencias: { pacienteId: string; pacienteNombre: string };
 };
+
+// ── Inventario ────────────────────────────────────────────────────────────────
+export interface Insumo {
+  id: string;
+  nombre: string;
+  categoria: 'higiene' | 'medicamentos' | 'material_medico' | 'limpieza' | 'alimentos';
+  stockActual: number;
+  stockMinimo: number;
+  unidad: string;
+  observaciones?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Citas médicas ─────────────────────────────────────────────────────────────
+export interface CitaMedica {
+  id: string;
+  pacienteId: string;
+  especialidad: string;
+  medico: string;
+  fecha: string;       // YYYY-MM-DD
+  hora: string;        // HH:MM
+  lugar: string;
+  observaciones?: string;
+  estado: 'pendiente' | 'realizada' | 'cancelada';
+  createdAt: string;
+}
+
+// ── Lista de espera ───────────────────────────────────────────────────────────
+export interface SolicitanteIngreso {
+  id: string;
+  nombre: string;
+  apellido: string;
+  fechaNacimiento?: string;
+  diagnosticoPreliminar?: string;
+  contactoNombre: string;
+  contactoTelefono: string;
+  contactoRelacion: string;
+  prioridad: 'urgente' | 'normal';
+  estado: 'en_espera' | 'admitido' | 'descartado';
+  fechaSolicitud: string;
+  observaciones?: string;
+  createdAt: string;
+}
+
+// ── Asistencia ────────────────────────────────────────────────────────────────
+export interface RegistroAsistencia {
+  id: string;
+  usuarioId: string;
+  usuarioNombre: string;
+  usuarioRol: string;
+  fecha: string;         // YYYY-MM-DD
+  horaEntrada?: string;  // HH:MM
+  horaSalida?: string;   // HH:MM
+  observaciones?: string;
+  createdAt: string;
+}
+
+// ── Handover ──────────────────────────────────────────────────────────────────
+export interface NotaHandover {
+  id: string;
+  usuarioId: string;
+  usuarioNombre: string;
+  turno: 'mañana' | 'tarde' | 'noche';
+  fecha: string;                  // YYYY-MM-DD
+  novedades: string;
+  medicamentosEventos: string;
+  pendientesProximoTurno: string;
+  createdAt: string;
+}
+
+// ── Mensajes internos ─────────────────────────────────────────────────────────
+export interface MensajeInterno {
+  id: string;
+  autorId: string;
+  autorNombre: string;
+  titulo: string;
+  cuerpo: string;
+  paraRol: 'todos' | 'enfermero' | 'aseo';
+  createdAt: string;
+}
+
+// ── Parámetros de navegación nuevos ──────────────────────────────────────────
+export type InventarioStackParamList = {
+  InventarioList: undefined;
+  AgregarInsumo: { insumoId?: string } | undefined;
+};
+
+export type CitasStackParamList = {
+  CitasList: { pacienteId?: string; pacienteNombre?: string } | undefined;
+  AgregarCita: { pacienteId?: string; pacienteNombre?: string } | undefined;
+};
+
+export type ListaEsperaStackParamList = {
+  ListaEsperaList: undefined;
+  AgregarSolicitante: { solicitanteId?: string } | undefined;
+};
