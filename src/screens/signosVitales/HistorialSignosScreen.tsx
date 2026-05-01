@@ -297,14 +297,16 @@ export default function HistorialSignosScreen({ navigation, route }: Props) {
             <Text style={styles.sinHorarioTexto}>Sin horario</Text>
           </View>
         )}
-        <TouchableOpacity
-          style={styles.exportBtn}
-          onPress={handleExportarExcel}
-          activeOpacity={0.75}
-        >
-          <MaterialCommunityIcons name="microsoft-excel" size={18} color={COLORS.secondary} />
-          <Text style={styles.exportBtnTexto}>Exportar Excel</Text>
-        </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity
+            style={styles.exportBtn}
+            onPress={handleExportarExcel}
+            activeOpacity={0.75}
+          >
+            <MaterialCommunityIcons name="microsoft-excel" size={18} color={COLORS.secondary} />
+            <Text style={styles.exportBtnTexto}>Exportar Excel</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <FlatList

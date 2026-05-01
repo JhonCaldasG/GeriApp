@@ -145,14 +145,16 @@ export default function HistorialAdministracionesScreen({ route }: Props) {
       <View style={styles.pacienteHeader}>
         <MaterialCommunityIcons name="account" size={20} color="#E65100" />
         <Text style={styles.pacienteNombre}>{pacienteNombre}</Text>
-        <TouchableOpacity
-          style={styles.exportBtn}
-          onPress={handleExportarExcel}
-          activeOpacity={0.75}
-        >
-          <MaterialCommunityIcons name="microsoft-excel" size={18} color={COLORS.secondary} />
-          <Text style={styles.exportBtnTexto}>Exportar Excel</Text>
-        </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity
+            style={styles.exportBtn}
+            onPress={handleExportarExcel}
+            activeOpacity={0.75}
+          >
+            <MaterialCommunityIcons name="microsoft-excel" size={18} color={COLORS.secondary} />
+            <Text style={styles.exportBtnTexto}>Exportar Excel</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Resumen */}

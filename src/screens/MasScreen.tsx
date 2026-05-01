@@ -22,7 +22,6 @@ const MODULOS_COMUNES: ModuloCard[] = [
   { tab: 'Aseo', label: 'Aseo y Limpieza', icono: 'broom', color: '#00695C', bg: '#E0F2F1', descripcion: 'Registro de limpiezas y zonas' },
   { tab: 'Inventario', label: 'Inventario', icono: 'package-variant', color: '#E65100', bg: '#FFF3E0', descripcion: 'Stock de insumos y materiales' },
   { tab: 'Citas', label: 'Citas Médicas', icono: 'calendar-heart', color: '#9C27B0', bg: '#F3E5F5', descripcion: 'Agenda de consultas y estudios' },
-  { tab: 'Handover', label: 'Nota de Turno', icono: 'transfer', color: '#6A1B9A', bg: '#EDE7F6', descripcion: 'Entrega de turno entre personal' },
   { tab: 'Mensajes', label: 'Mensajes', icono: 'bulletin-board', color: '#0277BD', bg: '#E1F5FE', descripcion: 'Tablón de anuncios interno' },
   { tab: 'ReportesMensuales', label: 'Reportes', icono: 'file-chart', color: '#1565C0', bg: '#E3F2FD', descripcion: 'Reportes mensuales por paciente' },
   { tab: 'Protocolos', label: 'Protocolos', icono: 'clipboard-list', color: '#B71C1C', bg: '#FFEBEE', descripcion: 'Protocolos de actuación ante emergencias' },

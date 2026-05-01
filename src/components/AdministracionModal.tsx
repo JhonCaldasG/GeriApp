@@ -16,7 +16,7 @@ interface Props {
   totalDiarias: number | null;
   ultimaAdminIso: string | null;
   onDismiss: () => void;
-  onRegistrado: () => void;
+  onRegistrado: (wasRejected: boolean) => void;
 }
 
 function horasEntreDosisDe(frecuencia: string): number | null {
@@ -124,7 +124,7 @@ export default function AdministracionModal({
       motivoRechazo: '',
     });
     setGuardando(false);
-    onRegistrado();
+    onRegistrado(false);
   }
 
   async function handleRechazar() {
@@ -143,7 +143,7 @@ export default function AdministracionModal({
       motivoRechazo: motivoRechazo.trim(),
     });
     setGuardando(false);
-    onRegistrado();
+    onRegistrado(true);
   }
 
   if (!medicamento) return null;

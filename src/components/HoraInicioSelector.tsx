@@ -1,194 +1,132 @@
-import React, { useRef, useCallback, useEffect } from 'react';
-import {
-  View, ScrollView, TouchableOpacity, StyleSheet,
-  NativeSyntheticEvent, NativeScrollEvent,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Text } from 'react-native-paper';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZES } from '../theme';
 
-type AmPm = 'AM' | 'PM';
-
-const HORAS_12 = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')); // 01..12
-const MINUTOS  = ['00', '15', '30', '45'];
-const ITEM_H   = 44;
-const VISIBLE  = 5;
-const PADDING  = ITEM_H * Math.floor(VISIBLE / 2);
-
-function to24(h12: number, ampm: AmPm): number {
-  if (ampm === 'AM') return h12 === 12 ? 0 : h12;
-  return h12 === 12 ? 12 : h12 + 12;
-}
-
-function from24(h24: number): { h12: number; ampm: AmPm } {
-  if (h24 === 0)  return { h12: 12, ampm: 'AM' };
-  if (h24 < 12)  return { h12: h24, ampm: 'AM' };
-  if (h24 === 12) return { h12: 12, ampm: 'PM' };
-  return { h12: h24 - 12, ampm: 'PM' };
-}
-
-// ── WheelPicker ───────────────────────────────────────────────────────────────
-interface WheelProps {
-  items: string[];
-  selectedIndex: number;
-  onSelect: (i: number) => void;
-  width: number;
-}
-
-function WheelPicker({ items, selectedIndex, onSelect, width }: WheelProps) {
-  const ref = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    ref.current?.scrollTo({ y: selectedIndex * ITEM_H, animated: false });
-  }, [selectedIndex]);
-
-  const handleScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const idx = Math.round(e.nativeEvent.contentOffset.y / ITEM_H);
-      onSelect(Math.max(0, Math.min(items.length - 1, idx)));
-    },
-    [items.length, onSelect]
-  );
-
-  return (
-    <View style={{ width, height: ITEM_H * VISIBLE, position: 'relative' }}>
-      <View pointerEvents="none" style={[styles.highlight, { top: ITEM_H * Math.floor(VISIBLE / 2) }]} />
-      <ScrollView
-        ref={ref}
-        showsVerticalScrollIndicator={false}
-        snapToInterval={ITEM_H}
-        decelerationRate="fast"
-        contentContainerStyle={{ paddingVertical: PADDING }}
-        onMomentumScrollEnd={handleScrollEnd}
-        onScrollEndDrag={handleScrollEnd}
-      >
-        {items.map((item, i) => {
-          const activo = i === selectedIndex;
-          return (
-            <TouchableOpacity
-              key={i}
-              style={styles.item}
-              onPress={() => {
-                onSelect(i);
-                ref.current?.scrollTo({ y: i * ITEM_H, animated: true });
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.itemTexto, activo && styles.itemTextoActivo]}>{item}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    </View>
-  );
-}
-
-// ── HoraInicioSelector ────────────────────────────────────────────────────────
 interface Props {
-  hora24: string;           // "HH:MM" en 24h — formato interno de almacenamiento
+  hora24: string;
   onChange: (h: string) => void;
 }
 
+const PRESETS = [
+  { label: 'Madrugada', hora: '06:00' },
+  { label: 'Mañana',    hora: '08:00' },
+  { label: 'Mediodía',  hora: '12:00' },
+  { label: 'Tarde',     hora: '16:00' },
+  { label: 'Noche',     hora: '20:00' },
+  { label: 'Dormir',    hora: '22:00' },
+];
+
+function horaToDate(hora24: string): Date {
+  const [h, m] = hora24.split(':').map(Number);
+  const d = new Date();
+  d.setHours(isNaN(h) ? 8 : h, isNaN(m) ? 0 : m, 0, 0);
+  return d;
+}
+
+function dateToHora24(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatDisplay(hora24: string): string {
+  const [h, m] = hora24.split(':').map(Number);
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${String(h12).padStart(2, '0')}:${String(m ?? 0).padStart(2, '0')} ${ampm}`;
+}
+
 export default function HoraInicioSelector({ hora24, onChange }: Props) {
-  const partes = hora24?.split(':') ?? ['08', '00'];
-  const h24    = Math.min(23, Math.max(0, parseInt(partes[0] ?? '8', 10)));
-  const mRaw   = partes[1] ?? '00';
-  const mIdx   = Math.max(0, MINUTOS.indexOf(mRaw));
+  const [mostrarPicker, setMostrarPicker] = useState(false);
+  const date = horaToDate(hora24);
 
-  const { h12, ampm } = from24(h24);
-  const hIdx = h12 - 1; // HORAS_12[0] = '01' → h12=1
-
-  function onHoraChange(i: number) {
-    const h24nuevo = to24(i + 1, ampm);
-    onChange(`${String(h24nuevo).padStart(2, '0')}:${MINUTOS[mIdx]}`);
-  }
-
-  function onMinChange(i: number) {
-    onChange(`${String(to24(h12, ampm)).padStart(2, '0')}:${MINUTOS[i]}`);
-  }
-
-  function onAmPmChange(v: AmPm) {
-    const h24nuevo = to24(h12, v);
-    onChange(`${String(h24nuevo).padStart(2, '0')}:${MINUTOS[mIdx]}`);
+  function handleChange(_: DateTimePickerEvent, selected?: Date) {
+    if (Platform.OS === 'android') setMostrarPicker(false);
+    if (selected) onChange(dateToHora24(selected));
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Hora de inicio</Text>
-      <View style={styles.row}>
-        <WheelPicker
-          items={HORAS_12}
-          selectedIndex={hIdx}
-          onSelect={onHoraChange}
-          width={70}
-        />
-        <Text style={styles.sep}>:</Text>
-        <WheelPicker
-          items={MINUTOS}
-          selectedIndex={mIdx}
-          onSelect={onMinChange}
-          width={70}
-        />
+
+      {/* Presets */}
+      <View style={styles.presetsRow}>
+        {PRESETS.map(p => {
+          const activo = hora24 === p.hora;
+          return (
+            <TouchableOpacity
+              key={p.hora}
+              style={[styles.preset, activo && styles.presetActivo]}
+              onPress={() => onChange(p.hora)}
+            >
+              <Text style={[styles.presetHora, activo && styles.presetTextoActivo]}>{p.hora}</Text>
+              <Text style={[styles.presetLabel, activo && styles.presetTextoActivo]}>{p.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
-      {/* Toggle AM / PM */}
-      <View style={styles.ampmRow}>
-        {(['AM', 'PM'] as AmPm[]).map(v => (
-          <TouchableOpacity
-            key={v}
-            style={[styles.ampmBtn, ampm === v && styles.ampmBtnActivo]}
-            onPress={() => onAmPmChange(v)}
-          >
-            <Text style={[styles.ampmTexto, ampm === v && styles.ampmTextoActivo]}>{v}</Text>
+      {/* iOS: spinner inline siempre visible */}
+      {Platform.OS === 'ios' && (
+        <DateTimePicker
+          value={date}
+          mode="time"
+          display="spinner"
+          onChange={handleChange}
+          locale="es-AR"
+          style={styles.iosPicker}
+          textColor={COLORS.textPrimary}
+        />
+      )}
+
+      {/* Android: botón que abre el modal nativo */}
+      {Platform.OS === 'android' && (
+        <>
+          <TouchableOpacity style={styles.androidBtn} onPress={() => setMostrarPicker(true)}>
+            <MaterialCommunityIcons name="clock-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.androidHora}>{formatDisplay(hora24)}</Text>
+            <MaterialCommunityIcons name="pencil-outline" size={16} color={COLORS.textSecondary} />
           </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.valor}>
-        {HORAS_12[hIdx]}:{MINUTOS[mIdx]} {ampm}
-      </Text>
+          {mostrarPicker && (
+            <DateTimePicker
+              value={date}
+              mode="time"
+              display="default"
+              onChange={handleChange}
+            />
+          )}
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 12,
-    gap: 8,
+    borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
+    backgroundColor: COLORS.background, padding: 14, marginBottom: 12, gap: 12,
   },
   label: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: FONT_SIZES.xs, fontWeight: '700',
+    color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5,
   },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  sep: { fontSize: 26, fontWeight: '800', color: COLORS.textPrimary, marginHorizontal: 4 },
-  item: { height: ITEM_H, alignItems: 'center', justifyContent: 'center' },
-  itemTexto: { fontSize: 18, color: COLORS.textSecondary, fontWeight: '400' },
-  itemTextoActivo: { fontSize: 24, fontWeight: '800', color: COLORS.textPrimary },
-  highlight: {
-    position: 'absolute', left: 0, right: 0, height: ITEM_H,
-    borderTopWidth: 1.5, borderBottomWidth: 1.5, borderColor: COLORS.primary,
-    backgroundColor: 'rgba(25,118,210,0.06)', borderRadius: 8,
+  presetsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  preset: {
+    alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6,
+    borderRadius: 10, borderWidth: 1, borderColor: COLORS.border,
+    backgroundColor: COLORS.surface, minWidth: 66,
   },
-  ampmRow: {
-    flexDirection: 'row',
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  presetActivo: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  presetHora: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.textPrimary },
+  presetLabel: { fontSize: 10, color: COLORS.textSecondary, marginTop: 1 },
+  presetTextoActivo: { color: '#fff' },
+  iosPicker: { height: 140, marginHorizontal: -6 },
+  androidBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: COLORS.surface, borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderWidth: 1, borderColor: COLORS.border,
   },
-  ampmBtn: { paddingHorizontal: 20, paddingVertical: 6, backgroundColor: COLORS.surface },
-  ampmBtnActivo: { backgroundColor: COLORS.primary },
-  ampmTexto: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.textSecondary },
-  ampmTextoActivo: { color: COLORS.white },
-  valor: { fontSize: FONT_SIZES.md, fontWeight: '700', color: COLORS.primary },
+  androidHora: { flex: 1, fontSize: FONT_SIZES.xl, fontWeight: '800', color: COLORS.primary },
 });

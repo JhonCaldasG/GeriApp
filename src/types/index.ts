@@ -138,6 +138,7 @@ export interface TomaSigno {
   nombre: string;      // "Mañana", "Tarde", "Noche"
   horaInicio: string;  // "07:00"
   horaFin: string;     // "09:00"
+  createdAt: string;
 }
 
 export type RolUsuario = 'admin' | 'enfermero' | 'aseo';
@@ -231,6 +232,7 @@ export type NotificacionTipo =
   | 'infraccion_nueva'
   | 'turno_proximo'
   | 'signos_alerta'
+  | 'stock_bajo'
   | 'sistema';
 
 export interface Notificacion {
@@ -322,6 +324,11 @@ export interface Insumo {
   stockActual: number;
   stockMinimo: number;
   unidad: string;
+  // Pharmaceutical fields (only relevant when categoria === 'medicamentos')
+  presentation?: string;    // e.g. "tablet", "syrup", "injectable", "gloves", "mask"
+  concentration?: string;   // medications: e.g. "500mg", "10mg/5ml"
+  size?: string;            // medical supplies: e.g. "M", "5ml", "10x10cm"
+  packageQuantity?: number; // units per package, e.g. 30 tablets or 100 gloves per box
   observaciones?: string;
   createdAt: string;
   updatedAt: string;

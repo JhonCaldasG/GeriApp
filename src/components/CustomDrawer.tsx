@@ -96,7 +96,6 @@ export default function CustomDrawer() {
     ...(!soloAseo ? [
       { name: 'Inventario',        label: 'Inventario',       icono: 'package-variant',      color: '#E65100', separator: true },
       { name: 'Citas',             label: 'Citas Médicas',    icono: 'calendar-heart',       color: '#9C27B0' },
-      { name: 'Handover',          label: 'Nota de Turno',    icono: 'transfer',             color: '#6A1B9A' },
       { name: 'Mensajes',          label: 'Mensajes',         icono: 'bulletin-board',       color: '#0277BD' },
       { name: 'ReportesMensuales', label: 'Reportes',         icono: 'file-chart',           color: '#1565C0' },
     ] : []),

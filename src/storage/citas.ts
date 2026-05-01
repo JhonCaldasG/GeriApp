@@ -24,6 +24,25 @@ export async function obtenerCitas(pacienteId?: string): Promise<CitaMedica[]> {
   return (data ?? []).map(rowToCita);
 }
 
+export async function obtenerCitaPorId(id: string): Promise<CitaMedica | null> {
+  const { data, error } = await supabase.from('citas_medicas').select('*').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data ? rowToCita(data) : null;
+}
+
+export async function actualizarCita(id: string, campos: Partial<Omit<CitaMedica, 'id' | 'createdAt' | 'pacienteId'>>): Promise<void> {
+  const update: any = {};
+  if (campos.especialidad !== undefined) update.especialidad = campos.especialidad;
+  if (campos.medico !== undefined) update.medico = campos.medico;
+  if (campos.fecha !== undefined) update.fecha = campos.fecha;
+  if (campos.hora !== undefined) update.hora = campos.hora;
+  if (campos.lugar !== undefined) update.lugar = campos.lugar;
+  if (campos.observaciones !== undefined) update.observaciones = campos.observaciones;
+  if (campos.estado !== undefined) update.estado = campos.estado;
+  const { error } = await supabase.from('citas_medicas').update(update).eq('id', id);
+  if (error) throw error;
+}
+
 export async function guardarCita(cita: Omit<CitaMedica, 'id' | 'createdAt'>): Promise<CitaMedica> {
   const { data, error } = await supabase
     .from('citas_medicas')

@@ -9,6 +9,7 @@ function rowToToma(row: any): TomaSigno {
     nombre: row.nombre,
     horaInicio: row.hora_inicio,
     horaFin: row.hora_fin,
+    createdAt: row.created_at,
   };
 }
 

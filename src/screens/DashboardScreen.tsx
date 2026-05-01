@@ -133,7 +133,8 @@ export default function DashboardScreen() {
 
       // ── Signos vitales: ventana de toma ya cerrada sin registro ──────────────
       pacientesActivos.forEach(p => {
-        (horarios[p.id] ?? []).forEach(t => {
+        if (!horarios[p.id]?.length) return;
+        (horarios[p.id]).forEach(t => {
           if (!t.horaFin) return;
           const [hFin, mFin] = t.horaFin.split(':').map(Number);
           if (isNaN(hFin) || isNaN(mFin)) return;
@@ -213,11 +214,13 @@ export default function DashboardScreen() {
 
       // ── Signos vitales: tomas sin registro ese día ──────────────────────────
       pacientesActivos.forEach(p => {
-        // Solo desde la fecha de ingreso del paciente (o creación del registro si no tiene ingreso)
         const admision = (p.fechaIngreso ?? p.createdAt).slice(0, 10);
         if (admision > fechaISO) return;
-        (horarios[p.id] ?? []).forEach(t => {
+        if (!horarios[p.id]?.length) return;
+        (horarios[p.id]).forEach(t => {
           if (!t.horaFin) return;
+          // Only check days on or after the schedule entry was created
+          if (t.createdAt.slice(0, 10) > fechaISO) return;
           const yaRegistrada = signosVitales.some(s =>
             s.pacienteId === p.id &&
             s.tomaNombre === t.nombre &&
@@ -680,14 +683,6 @@ export default function DashboardScreen() {
               <Text style={[styles.accionTexto, { color: COLORS.warningLight ?? COLORS.warning }]}>Medicamentos</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.accionBtn, { backgroundColor: colors.surface }]}
-              onPress={() => (navigation as any).navigate('Handover')}
-              activeOpacity={0.75}
-            >
-              <MaterialCommunityIcons name="transfer" size={24} color="#6A1B9A" />
-              <Text style={[styles.accionTexto, { color: '#6A1B9A' }]}>Nota de{'\n'}Turno</Text>
-            </TouchableOpacity>
 
             {isAdmin && (
               <TouchableOpacity

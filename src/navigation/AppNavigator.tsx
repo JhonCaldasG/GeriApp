@@ -70,7 +70,6 @@ import CitasMedicasScreen from '../screens/citas/CitasMedicasScreen';
 import AgregarCitaScreen from '../screens/citas/AgregarCitaScreen';
 import ListaEsperaScreen from '../screens/listaEspera/ListaEsperaScreen';
 import AsistenciaScreen from '../screens/asistencia/AsistenciaScreen';
-import HandoverScreen from '../screens/turnos/HandoverScreen';
 import MensajesScreen from '../screens/mensajes/MensajesScreen';
 import ReportesMensualesScreen from '../screens/reportes/ReportesMensualesScreen';
 import EstadisticasScreen from '../screens/reportes/EstadisticasScreen';
@@ -389,11 +388,6 @@ function AppTabs() {
               options={{ headerShown: true, ...headerOpts, title: 'Asistencia del Personal', headerLeft: menuLeft }} />
           )}
 
-          {/* Handover — todos */}
-          {!soloAseo && (
-            <Tab.Screen name="Handover" component={HandoverScreen}
-              options={{ headerShown: true, ...headerOpts, title: 'Nota de Turno', headerLeft: menuLeft }} />
-          )}
 
           {/* Mensajes — todos */}
           {!soloAseo && (

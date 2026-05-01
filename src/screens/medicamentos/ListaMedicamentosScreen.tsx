@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, FlatList, StyleSheet, Alert, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { Text, FAB, IconButton, Chip, TouchableRipple } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Medicamento, MedicamentosStackParamList } from '../../types';
+import { Medicamento, Insumo, MedicamentosStackParamList } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { useEliminar } from '../../hooks/useEliminar';
@@ -15,6 +15,8 @@ import { formatearFechaHora } from '../../storage';
 import { useAppTheme } from '../../context/ThemeContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 import { obtenerIncumplimientos } from '../../storage/incumplimientos';
+import { obtenerInventario, ajustarStock } from '../../storage/inventario';
+import { crearNotificacion } from '../../storage/notificaciones';
 
 type Props = NativeStackScreenProps<MedicamentosStackParamList, 'ListaMedicamentos'>;
 
@@ -88,21 +90,53 @@ function formatearProximaToma(proxima: Date): { texto: string; vencida: boolean 
   return { texto, vencida };
 }
 
+function estadoStock(i: Insumo): 'bajo' | 'alerta' | 'ok' {
+  if (i.stockActual <= i.stockMinimo) return 'bajo';
+  if (i.stockActual <= i.stockMinimo * 1.5) return 'alerta';
+  return 'ok';
+}
+
+/**
+ * Returns how many inventory units to deduct for one dose administration.
+ * - Measurement units (mg, ml, g, mcg, UI, etc.) → always 1 physical unit.
+ * - Countable units (tableta, cápsula, comprimido, etc.) → use the numeric prefix.
+ * - Anything else → 1.
+ */
+function parseDoseDeduction(dosis: string): number {
+  const s = dosis.toLowerCase().trim();
+  if (/\d+\s*(mg|ml|g\b|mcg|ug|ui|iu|mmol|meq|%|cc)/.test(s)) return 1;
+  const countMatch = s.match(
+    /^(\d+(?:\.\d+)?)\s*(tableta|comprimido|c[aá]psula|pastilla|gragea|tab\b|cap\b|gota|supositorio|parche|ampolla|amp\b|sobre|sachet)/,
+  );
+  if (countMatch) {
+    const n = parseFloat(countMatch[1]);
+    if (!isNaN(n) && n > 0 && n <= 20) return n;
+  }
+  return 1;
+}
+
+const COLOR_STOCK = { bajo: '#C62828', alerta: '#E65100', ok: '#2E7D32' };
+const BG_STOCK    = { bajo: '#FFEBEE', alerta: '#FFF3E0', ok: '#E8F5E9' };
+
 export default function ListaMedicamentosScreen({ navigation, route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const { medicamentos, cargarMedicamentos, eliminarMedicamento, administraciones, cargarAdministraciones, pacientes } = useApp();
-  const { isAdmin } = useAuth();
+  const { isAdmin, usuario } = useAuth();
   const { colors } = useAppTheme();
 
   const { eliminando, exito, ejecutarEliminacion } = useEliminar();
   const [medAdministrar, setMedAdministrar] = useState<Medicamento | null>(null);
   const [medEditar, setMedEditar] = useState<Medicamento | null>(null);
   const [medsHabilitados, setMedsHabilitados] = useState<Set<string>>(new Set());
+  const [inventarioMeds, setInventarioMeds] = useState<Insumo[]>([]);
+  const [reporteModal, setReporteModal] = useState<{ med: Medicamento; insumo?: Insumo } | null>(null);
+  const [reporteMensaje, setReporteMensaje] = useState('');
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       cargarMedicamentos(pacienteId);
       cargarAdministraciones();
+      obtenerInventario().then(lista => setInventarioMeds(lista.filter(i => i.categoria === 'medicamentos'))).catch(() => {});
       const hoyISO = new Date().toISOString().slice(0, 10);
       obtenerIncumplimientos(1).then(incs => {
         const habilitados = new Set(
@@ -179,12 +213,39 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
     );
   }
 
+  function insumoParaMed(med: Medicamento): Insumo | undefined {
+    const nombre = med.nombre.toLowerCase();
+    return inventarioMeds.find(i => i.nombre.toLowerCase().includes(nombre) || nombre.includes(i.nombre.toLowerCase()));
+  }
+
+  async function enviarReporte() {
+    if (!reporteModal) return;
+    const { med, insumo } = reporteModal;
+    const stockInfo = insumo ? ` Stock actual: ${insumo.stockActual} ${insumo.unidad} (mínimo: ${insumo.stockMinimo}).` : '';
+    try {
+      await crearNotificacion({
+        paraRol: 'admin',
+        tipo: 'stock_bajo',
+        titulo: `Alerta de stock: ${med.nombre}`,
+        mensaje: (reporteMensaje.trim() || `Se requiere revisión del stock de ${med.nombre}.`) + stockInfo + ` Reportado por ${usuario ? `${usuario.nombre} ${usuario.apellido}` : 'un usuario'}.`,
+        datos: { medicamentoNombre: med.nombre, insumoId: insumo?.id },
+      });
+      Alert.alert('Enviado', 'El administrador fue notificado.');
+    } catch {
+      Alert.alert('Error', 'No se pudo enviar el reporte.');
+    }
+    setReporteModal(null);
+    setReporteMensaje('');
+  }
+
   const renderMedicamento = ({ item }: { item: Medicamento }) => {
     const ultimaInfo = ultimaAdminInfo(item.id);
     const totalDiarias = dosesPerDay(item.frecuencia);
     const dosisHoy = dosisHoyPorMed[item.id] ?? 0;
     const dosisCompletas = totalDiarias !== null && dosisHoy >= totalDiarias;
     const habilitado = medsHabilitados.has(item.nombre);
+    const insumo = insumoParaMed(item);
+    const estado = insumo ? estadoStock(insumo) : null;
 
     // Calcular próxima toma
     let proximaToma: { texto: string; vencida: boolean } | null = null;
@@ -225,6 +286,28 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
           })() : null}
           {item.viaAdministracion ? <Text style={styles.medVia}>Vía: {item.viaAdministracion}</Text> : null}
           {item.observaciones ? <Text style={styles.medObs}>{item.observaciones}</Text> : null}
+
+          {/* Stock en inventario */}
+          {insumo && estado && (
+            <View style={[styles.stockBadge, { backgroundColor: BG_STOCK[estado] }]}>
+              <MaterialCommunityIcons name="package-variant-closed" size={12} color={COLOR_STOCK[estado]} />
+              <Text style={[styles.stockTexto, { color: COLOR_STOCK[estado] }]}>
+                Stock: {insumo.stockActual} {insumo.unidad}
+                {estado === 'bajo' ? ' — Stock bajo' : estado === 'alerta' ? ' — Stock en alerta' : ''}
+              </Text>
+            </View>
+          )}
+
+          {/* Botón reportar */}
+          {!isAdmin && (
+            <TouchableOpacity
+              style={styles.btnReporte}
+              onPress={() => { setReporteModal({ med: item, insumo }); setReporteMensaje(''); }}
+            >
+              <MaterialCommunityIcons name="bell-ring-outline" size={13} color={COLORS.warning} />
+              <Text style={styles.btnReporteTexto}>Informar al admin</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Estado de dosis de hoy */}
           {item.activo && totalDiarias !== null && (
@@ -421,6 +504,34 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
         />
       )}
 
+      <Modal visible={!!reporteModal} transparent animationType="fade" onRequestClose={() => setReporteModal(null)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+            <Text style={styles.modalTitulo}>Informar al administrador</Text>
+            <Text style={{ color: COLORS.textSecondary, fontSize: FONT_SIZES.sm, marginBottom: 8 }}>
+              {reporteModal?.med.nombre}
+              {reporteModal?.insumo ? `  •  Stock: ${reporteModal.insumo.stockActual} ${reporteModal.insumo.unidad}` : '  •  Sin insumo vinculado en inventario'}
+            </Text>
+            <TextInput
+              style={[styles.modalInput, { color: colors.textPrimary, borderColor: COLORS.border, minHeight: 80, textAlignVertical: 'top' }]}
+              placeholder="Describe la situación (opcional)"
+              placeholderTextColor={COLORS.textSecondary}
+              multiline
+              value={reporteMensaje}
+              onChangeText={setReporteMensaje}
+            />
+            <View style={styles.modalBtns}>
+              <TouchableOpacity style={styles.modalBtnCancelar} onPress={() => setReporteModal(null)}>
+                <Text style={{ color: COLORS.textSecondary, fontWeight: '700' }}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalBtnConfirmar} onPress={enviarReporte}>
+                <Text style={{ color: '#fff', fontWeight: '700' }}>Enviar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <AdministracionModal
         visible={!!medAdministrar}
         medicamento={medAdministrar}
@@ -429,10 +540,41 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
         totalDiarias={medAdministrar ? dosesPerDay(medAdministrar.frecuencia) : null}
         ultimaAdminIso={medAdministrar ? (ultimaAdminInfo(medAdministrar.id)?.iso ?? null) : null}
         onDismiss={() => setMedAdministrar(null)}
-        onRegistrado={() => {
+        onRegistrado={async (wasRejected: boolean) => {
+          const med = medAdministrar;
           setMedAdministrar(null);
           cargarAdministraciones();
-          Alert.alert('Registrado', 'La administración de la dosis fue guardada correctamente.');
+          if (!wasRejected && med) {
+            const insumo = insumoParaMed(med);
+            if (insumo) {
+              const delta = -parseDoseDeduction(med.dosis);
+              const stockAntes = insumo.stockActual;
+              const stockDespues = Math.max(0, stockAntes + delta);
+              try {
+                await ajustarStock(insumo.id, delta, usuario ? `${usuario.nombre} ${usuario.apellido}` : undefined, pacienteNombre);
+                obtenerInventario()
+                  .then(lista => setInventarioMeds(lista.filter(i => i.categoria === 'medicamentos')))
+                  .catch(() => {});
+                if (stockAntes > insumo.stockMinimo && stockDespues <= insumo.stockMinimo) {
+                  crearNotificacion({
+                    paraRol: 'admin',
+                    tipo: 'stock_bajo',
+                    titulo: `Stock bajo: ${insumo.nombre}`,
+                    mensaje: `El stock de ${insumo.nombre} llegó a ${stockDespues} ${insumo.unidad} (mínimo: ${insumo.stockMinimo}). Descuento automático por dosis de ${med.nombre} para ${pacienteNombre}.`,
+                    datos: { insumoId: insumo.id, medicamentoNombre: med.nombre },
+                  }).catch(() => {});
+                }
+              } catch {
+                // Deduction failed silently — administration was already saved
+              }
+            }
+          }
+          Alert.alert(
+            wasRejected ? 'Rechazo registrado' : 'Registrado',
+            wasRejected
+              ? 'El rechazo de la dosis fue registrado correctamente.'
+              : 'La administración de la dosis fue guardada correctamente.',
+          );
         }}
       />
 
@@ -544,6 +686,26 @@ const styles = StyleSheet.create({
   },
   chipDosisCompletaTexto: { fontSize: FONT_SIZES.xs, color: COLORS.secondaryLight, fontWeight: '700' },
   fab: { position: 'absolute', bottom: 20, right: 16, backgroundColor: COLORS.warningLight },
+  stockBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+    marginTop: 6, alignSelf: 'flex-start',
+  },
+  stockTexto: { fontSize: FONT_SIZES.xs, fontWeight: '700' },
+  btnReporte: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    marginTop: 8, alignSelf: 'flex-start',
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
+    backgroundColor: '#FFF3E0', borderWidth: 1, borderColor: '#FFCC80',
+  },
+  btnReporteTexto: { fontSize: FONT_SIZES.xs, color: COLORS.warning, fontWeight: '700' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
+  modalCard: { width: 320, borderRadius: 16, padding: 20, gap: 12 },
+  modalTitulo: { fontSize: FONT_SIZES.md, fontWeight: '800', color: COLORS.textPrimary },
+  modalInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: FONT_SIZES.sm },
+  modalBtns: { flexDirection: 'row', gap: 10 },
+  modalBtnCancelar: { flex: 1, padding: 12, borderRadius: 10, alignItems: 'center', backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border },
+  modalBtnConfirmar: { flex: 1, padding: 12, borderRadius: 10, alignItems: 'center', backgroundColor: COLORS.warning },
   alergiaBanner: {
     flexDirection: 'row',
     alignItems: 'center',
