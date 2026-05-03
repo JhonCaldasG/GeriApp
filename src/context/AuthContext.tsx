@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useRef, ReactNod
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Usuario } from '../types';
-import { login as loginStorage, inicializarUsuarios, obtenerUsuarios } from '../storage/usuarios';
+import { supabase } from '../lib/supabase';
+import { login as loginStorage, obtenerUsuarios } from '../storage/usuarios';
 
 // ─── Configuración ───────────────────────────────────────────────────────────
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutos
@@ -13,8 +14,11 @@ interface AuthContextType {
   cargando: boolean;
   isAdmin: boolean;
   isAseo: boolean;
+  isSuperAdmin: boolean;
   ultimoIngreso: string | null;
   login: (usuario: string, password: string) => Promise<boolean>;
+  loginWithEmail: (email: string, password: string) => Promise<boolean>;
+  completeLogin: () => Promise<boolean>;
   logout: () => void;
   resetInactivityTimer: () => void;
 }
@@ -32,7 +36,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ─── Cargar sesión al iniciar ─────────────────────────────────────────────
   useEffect(() => {
     const iniciar = async () => {
-      await inicializarUsuarios();
+      // Primero intentar restaurar desde sesión de Supabase Auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const usuarios = await obtenerUsuarios();
+        const usuarioValido = usuarios.find(u => (u as any).auth_id === session.user.id && u.activo);
+        if (usuarioValido) {
+          setUsuario(usuarioValido);
+          setUltimoIngreso(usuarioValido.ultimoIngreso ?? null);
+          setCargando(false);
+          startInactivityTimer();
+          return;
+        }
+      }
+
+      // Fallback: sesión guardada localmente (compatibilidad con sesiones anteriores)
       const sesion = await AsyncStorage.getItem(SESSION_KEY);
       if (sesion) {
         try {
@@ -85,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function startInactivityTimer() {
     clearInactivityTimer();
     inactivityTimer.current = setTimeout(() => {
-      doLogout();
+      doLogout(false); // inactividad: ocultar UI pero mantener JWT de Supabase
     }, INACTIVITY_TIMEOUT_MS);
   }
 
@@ -102,10 +120,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // ─── Auth actions ─────────────────────────────────────────────────────────
-  const doLogout = async () => {
+  const doLogout = async (cerrarSesionAuth = true) => {
     clearInactivityTimer();
     setUsuario(null);
     await AsyncStorage.removeItem(SESSION_KEY);
+    if (cerrarSesionAuth) await supabase.auth.signOut();
   };
 
   const login = async (usuarioStr: string, password: string): Promise<boolean> => {
@@ -139,18 +158,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
+  const loginWithEmail = async (email: string, password: string): Promise<boolean> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return !error;
+  };
+
+  const completeLogin = async (): Promise<boolean> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return false;
+
+    const { data: rows, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('auth_id', session.user.id)
+      .eq('activo', true);
+
+    const data = rows?.[0];
+    if (error || !data) return false;
+
+    const now = new Date().toISOString();
+    await supabase.from('usuarios').update({ ultimo_ingreso: now }).eq('id', data.id);
+
+    const u: Usuario = {
+      id: data.id,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      usuario: data.usuario,
+      rol: data.rol,
+      activo: data.activo,
+      ultimoIngreso: now,
+    };
+    setUsuario(u);
+    setUltimoIngreso(now);
+    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(u));
+    startInactivityTimer();
+    return true;
+  };
+
   const logout = () => {
-    doLogout();
+    doLogout(true); // logout manual: cierra también la sesión de Supabase
   };
 
   return (
     <AuthContext.Provider value={{
       usuario,
       cargando,
-      isAdmin: usuario?.rol === 'admin',
+      isAdmin: usuario?.rol === 'admin' || usuario?.rol === 'superadmin',
       isAseo: usuario?.rol === 'aseo',
+      isSuperAdmin: usuario?.rol === 'superadmin',
       ultimoIngreso,
       login,
+      loginWithEmail,
+      completeLogin,
       logout,
       resetInactivityTimer,
     }}>

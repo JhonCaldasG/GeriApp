@@ -141,14 +141,13 @@ export interface TomaSigno {
   createdAt: string;
 }
 
-export type RolUsuario = 'admin' | 'enfermero' | 'aseo';
+export type RolUsuario = 'admin' | 'enfermero' | 'aseo' | 'superadmin';
 
 export interface Usuario {
   id: string;
   nombre: string;
   apellido: string;
   usuario: string;
-  password: string;
   rol: RolUsuario;
   activo: boolean;
   ultimoIngreso?: string | null;
@@ -416,4 +415,18 @@ export type CitasStackParamList = {
 export type ListaEsperaStackParamList = {
   ListaEsperaList: undefined;
   AgregarSolicitante: { solicitanteId?: string } | undefined;
+};
+
+export interface HogarConfigItem {
+  id: string;
+  nombre: string;
+  slug: string;
+  estado: 'activo' | 'suspendido' | 'trial';
+  creadoEn: string;
+  cantidadPacientes?: number;
+}
+
+export type SuperAdminStackParamList = {
+  SuperAdminHogares: undefined;
+  HogarDetalle: { hogarId: string; hogarNombre: string };
 };

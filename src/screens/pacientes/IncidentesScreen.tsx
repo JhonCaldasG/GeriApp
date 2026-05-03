@@ -9,6 +9,7 @@ import { PacientesStackParamList, Incidente } from '../../types';
 import { obtenerIncidentes, guardarIncidente, eliminarIncidente } from '../../storage/incidentes';
 import { useAuth } from '../../context/AuthContext';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { useEliminar } from '../../hooks/useEliminar';
 import FeedbackEliminar from '../../components/FeedbackEliminar';
 import { COLORS, FONT_SIZES } from '../../theme';
@@ -29,6 +30,7 @@ export default function IncidentesScreen({ route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const { usuario, isAdmin } = useAuth();
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
 
   const { eliminando, exito, ejecutarEliminacion } = useEliminar();
   const [incidentes, setIncidentes] = useState<Incidente[]>([]);
@@ -79,6 +81,7 @@ export default function IncidentesScreen({ route }: Props) {
         accionesTomadas: acciones.trim(),
         registradoPor: usuario ? `${usuario.nombre} ${usuario.apellido}` : '',
       });
+      showToast('Incidente registrado');
       setModalVisible(false);
       await cargar();
     } catch {

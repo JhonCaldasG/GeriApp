@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { CitaMedica } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToCita(row: any): CitaMedica {
   return {
@@ -44,9 +45,11 @@ export async function actualizarCita(id: string, campos: Partial<Omit<CitaMedica
 }
 
 export async function guardarCita(cita: Omit<CitaMedica, 'id' | 'createdAt'>): Promise<CitaMedica> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('citas_medicas')
     .insert({
+      hogar_id: hogarId,
       paciente_id: cita.pacienteId,
       especialidad: cita.especialidad,
       medico: cita.medico,

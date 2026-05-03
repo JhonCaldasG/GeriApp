@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MensajeInterno } from '../types';
+import { getHogarId } from './hogar';
 
 const LEIDOS_KEY = '@mensajes_leidos';
 
@@ -27,9 +28,11 @@ export async function obtenerMensajes(rol: string): Promise<MensajeInterno[]> {
 }
 
 export async function publicarMensaje(mensaje: Omit<MensajeInterno, 'id' | 'createdAt'>): Promise<MensajeInterno> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('mensajes_internos')
     .insert({
+      hogar_id: hogarId,
       autor_id: mensaje.autorId,
       autor_nombre: mensaje.autorNombre,
       titulo: mensaje.titulo,

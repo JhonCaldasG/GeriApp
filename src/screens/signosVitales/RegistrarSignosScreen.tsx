@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SignosStackParamList, Incumplimiento } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import FirmaModal from '../../components/FirmaModal';
 import { COLORS, FONT_SIZES, SIGNO_RANGOS, SIGNO_LIMITES } from '../../theme';
 import { obtenerIncumplimientos, registrarIncumplimiento, enviarRequerimiento } from '../../storage/incumplimientos';
@@ -457,6 +458,7 @@ export default function RegistrarSignosScreen({ navigation, route }: Props) {
   const modoEdicion = !!signoId;
   const { agregarSigno, actualizarSigno, horarios, cargarHorarios, signosVitales, cargarSignos, pacientes } = useApp();
   const { usuario } = useAuth();
+  const { showToast } = useToast();
   const [guardando, setGuardando] = useState(false);
   const [firmaVisible, setFirmaVisible] = useState(false);
   const [tomaSeleccionada, setTomaSeleccionada] = useState('');
@@ -699,9 +701,8 @@ export default function RegistrarSignosScreen({ navigation, route }: Props) {
       };
       if (modoEdicion && signoId) {
         await actualizarSigno(signoId, { ...datosBase, editadoPor: firmante });
-        Alert.alert('Actualizado', 'Los signos vitales fueron actualizados correctamente.', [
-          { text: 'Ver historial', onPress: () => navigation.replace('HistorialSignos', { pacienteId, pacienteNombre }) },
-        ]);
+        showToast('Signos vitales actualizados', 'warning');
+        setTimeout(() => navigation.replace('HistorialSignos', { pacienteId, pacienteNombre }), 2600);
       } else {
         await agregarSigno({ pacienteId, ...datosBase, registradoPor: firmante });
 
@@ -755,16 +756,11 @@ export default function RegistrarSignosScreen({ navigation, route }: Props) {
           detalle: `Paciente: ${pacienteNombre}${tomaSeleccionada ? `, toma: ${tomaSeleccionada}` : ''}`,
         });
 
-        Alert.alert(
-          alertas.length > 0 ? '⚠️ Guardado con alertas' : 'Guardado',
-          alertas.length > 0
-            ? `Los signos fueron registrados. Se notificó al administrador por: ${alertas.join(', ')}.`
-            : 'Los signos vitales fueron registrados correctamente.',
-          [
-            { text: 'Ver historial', onPress: () => navigation.replace('HistorialSignos', { pacienteId, pacienteNombre }) },
-            { text: 'Nuevo registro', onPress: () => navigation.goBack() },
-          ]
+        showToast(
+          alertas.length > 0 ? `Alertas: ${alertas.join(', ')}` : '',
+          alertas.length > 0 ? 'warning' : 'success',
         );
+        setTimeout(() => navigation.replace('HistorialSignos', { pacienteId, pacienteNombre }), 2600);
       }
     } catch {
       Alert.alert('Error', 'No se pudo guardar. Intente nuevamente.');

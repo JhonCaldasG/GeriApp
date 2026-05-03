@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { TurnoEnfermeria } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToTurno(row: any): TurnoEnfermeria {
   return {
@@ -27,9 +28,11 @@ export async function obtenerTurnos(usuarioId?: string): Promise<TurnoEnfermeria
 export async function guardarTurno(
   t: Omit<TurnoEnfermeria, 'id' | 'createdAt'>
 ): Promise<TurnoEnfermeria> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('turnos_enfermeria')
     .insert({
+      hogar_id: hogarId,
       usuario_id: t.usuarioId,
       duracion: t.duracion,
       fecha_inicio: t.fechaInicio,

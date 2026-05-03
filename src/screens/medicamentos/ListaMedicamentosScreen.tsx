@@ -6,6 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Medicamento, Insumo, MedicamentosStackParamList } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { useEliminar } from '../../hooks/useEliminar';
 import FeedbackEliminar from '../../components/FeedbackEliminar';
 import EmptyState from '../../components/EmptyState';
@@ -122,6 +123,7 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const { medicamentos, cargarMedicamentos, eliminarMedicamento, administraciones, cargarAdministraciones, pacientes } = useApp();
   const { isAdmin, usuario } = useAuth();
+  const { showToast } = useToast();
   const { colors } = useAppTheme();
 
   const { eliminando, exito, ejecutarEliminacion } = useEliminar();
@@ -569,12 +571,7 @@ export default function ListaMedicamentosScreen({ navigation, route }: Props) {
               }
             }
           }
-          Alert.alert(
-            wasRejected ? 'Rechazo registrado' : 'Registrado',
-            wasRejected
-              ? 'El rechazo de la dosis fue registrado correctamente.'
-              : 'La administración de la dosis fue guardada correctamente.',
-          );
+          showToast(wasRejected ? 'El rechazo de la dosis fue registrado correctamente.' : 'La administración de la dosis fue guardada correctamente.');
         }}
       />
 

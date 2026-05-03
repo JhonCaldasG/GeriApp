@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { PacientesStackParamList, EvaluacionClinica } from '../../types';
 import { obtenerEvaluaciones, guardarEvaluacion, eliminarEvaluacion } from '../../storage/evaluaciones';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useEliminar } from '../../hooks/useEliminar';
 import FeedbackEliminar from '../../components/FeedbackEliminar';
@@ -106,6 +107,7 @@ function HistorialCard({ ev, onEliminar }: { ev: EvaluacionClinica; onEliminar?:
 export default function EvaluacionClinicaScreen({ route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const { usuario, isAdmin } = useAuth();
+  const { showToast } = useToast();
   const { colors } = useAppTheme();
 
   const [tipo, setTipo] = useState<'barthel' | 'braden'>('barthel');
@@ -146,7 +148,7 @@ export default function EvaluacionClinicaScreen({ route }: Props) {
         evaluadoPor: usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Desconocido',
       });
       await cargar();
-      Alert.alert('Guardado', `Evaluación ${tipo === 'barthel' ? 'Barthel' : 'Braden'} registrada: ${puntuacion} puntos (${categoria.label}).`);
+      showToast(`Evaluación ${tipo === 'barthel' ? 'Barthel' : 'Braden'} registrada: ${puntuacion} puntos (${categoria.label}).`);
     } catch {
       Alert.alert('Error', 'No se pudo guardar la evaluación.');
     } finally {

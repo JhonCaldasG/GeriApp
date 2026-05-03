@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { Incumplimiento } from '../types';
 import { crearNotificacion } from './notificaciones';
+import { getHogarId } from './hogar';
 
 function rowToIncumplimiento(row: any): Incumplimiento {
   return {
@@ -38,9 +39,11 @@ export async function obtenerIncumplimientos(dias = 30): Promise<Incumplimiento[
 export async function registrarIncumplimiento(
   inc: Omit<Incumplimiento, 'id' | 'registradoEn' | 'requerimientoMotivo' | 'requerimientoEstado' | 'requerimientoFecha' | 'requerimientoResueltoEn'>
 ): Promise<void> {
+  const hogarId = await getHogarId();
   const { error } = await supabase
     .from('incumplimientos')
     .insert({
+      hogar_id: hogarId,
       paciente_id: inc.pacienteId,
       tipo: inc.tipo,
       detalle: inc.detalle,
@@ -159,9 +162,10 @@ export async function rechazarRequerimiento(
   } catch { /* no interrumpir el flujo principal */ }
 }
 
-/** Devuelve el conjunto de IDs de incumplimientos resueltos que ya fueron registrados */
+/** Devuelve IDs de incumplimientos cuyo dato ya fue registrado en la BD (con o sin flujo de justificación) */
 export async function obtenerCompletadosIds(incs: Incumplimiento[]): Promise<Set<string>> {
-  const resueltos = incs.filter(i => i.requerimientoEstado === 'resuelto');
+  // Incluye resueltos (aprobados por admin) Y sin justificar (registrados tarde, sin workflow)
+  const resueltos = incs.filter(i => i.requerimientoEstado === 'resuelto' || !i.requerimientoEstado);
   if (resueltos.length === 0) return new Set();
 
   const completados = new Set<string>();

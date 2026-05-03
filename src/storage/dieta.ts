@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { RegistroDieta } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToDieta(row: any): RegistroDieta {
   return {
@@ -29,9 +30,11 @@ export async function obtenerDieta(pacienteId: string): Promise<RegistroDieta[]>
 export async function guardarDieta(
   r: Omit<RegistroDieta, 'id' | 'createdAt'>
 ): Promise<RegistroDieta> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('registros_dieta')
     .insert({
+      hogar_id: hogarId,
       paciente_id: r.pacienteId,
       tipo: r.tipo,
       descripcion: r.descripcion,

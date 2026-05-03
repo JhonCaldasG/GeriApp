@@ -8,7 +8,7 @@ import { COLORS, FONT_SIZES } from '../../theme';
 interface Props {
   visible: boolean;
   onDismiss: () => void;
-  onGuardar: (datos: Omit<Usuario, 'id'>) => Promise<void>;
+  onGuardar: (datos: Omit<Usuario, 'id'>, password?: string) => Promise<void>;
   usuarioEditar?: Usuario | null;
 }
 
@@ -46,11 +46,10 @@ export default function AgregarUsuarioModal({ visible, onDismiss, onGuardar, usu
       nombre: nombre.trim(),
       apellido: apellido.trim(),
       usuario: usuarioStr.trim(),
-      password: password.trim() || (usuarioEditar?.password ?? ''),
       rol,
       activo: true,
     };
-    await onGuardar(datos);
+    await onGuardar(datos, password.trim() || undefined);
     setGuardando(false);
   }
 

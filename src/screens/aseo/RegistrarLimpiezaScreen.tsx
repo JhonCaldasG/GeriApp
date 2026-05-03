@@ -8,6 +8,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AseoStackParamList, LimpiezaRegistro } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 import { uploadImagen } from '../../lib/supabase';
 import { rutaFotoHabitacion } from '../../storage/limpiezas';
@@ -29,6 +30,7 @@ export default function RegistrarLimpiezaScreen({ navigation, route }: Props) {
   const { pacienteId, pacienteNombre, habitacion } = route.params;
   const { agregarLimpieza } = useApp();
   const { usuario } = useAuth();
+  const { showToast } = useToast();
 
   const [guardando, setGuardando] = useState(false);
   const [subiendoFotos, setSubiendoFotos] = useState(false);
@@ -93,9 +95,8 @@ export default function RegistrarLimpiezaScreen({ navigation, route }: Props) {
         setSubiendoFotos(false);
       }
       await agregarLimpieza({ pacienteId, tipo, descripcion: descripcion.trim(), realizadoPor, observaciones: observaciones.trim(), fotoUrls });
-      Alert.alert('Registrado', 'La limpieza fue registrada correctamente.', [
-        { text: 'Aceptar', onPress: () => navigation.goBack() },
-      ]);
+      showToast('');
+      setTimeout(() => navigation.goBack(), 2600);
     } catch (e: any) {
       setSubiendoFotos(false);
       Alert.alert('Error', e?.message ?? 'No se pudo guardar. Intente nuevamente.');

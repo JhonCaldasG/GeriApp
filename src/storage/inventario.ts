@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Insumo } from '../types';
+import { getHogarId } from './hogar';
 
 // Required Supabase migration:
 // ALTER TABLE inventario ADD COLUMN IF NOT EXISTS presentation text;
@@ -46,9 +47,11 @@ export async function obtenerInventario(): Promise<Insumo[]> {
 }
 
 export async function guardarInsumo(insumo: Omit<Insumo, 'id' | 'createdAt' | 'updatedAt'>): Promise<Insumo> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('inventario')
     .insert({
+      hogar_id: hogarId,
       nombre: insumo.nombre,
       categoria: insumo.categoria,
       stock_actual: insumo.stockActual,
@@ -107,16 +110,21 @@ export async function ajustarStock(
     .update({ stock_actual: stockDespues, updated_at: new Date().toISOString() })
     .eq('id', id);
   if (error) throw error;
-  supabase.from('inventario_movimientos').insert({
-    insumo_id: id,
-    insumo_nombre: data.nombre,
-    tipo: delta > 0 ? 'entrada' : 'salida',
-    cantidad: Math.abs(delta),
-    stock_antes: stockAntes,
-    stock_despues: stockDespues,
-    usuario_nombre: usuarioNombre ?? null,
-    patient_name: patientName ?? null,
-  }).then(() => {}).catch(() => {});
+  getHogarId().then(hogarId => {
+    supabase.from('inventario_movimientos').insert({
+      hogar_id: hogarId,
+      insumo_id: id,
+      insumo_nombre: data.nombre,
+      tipo: delta > 0 ? 'entrada' : 'salida',
+      cantidad: Math.abs(delta),
+      stock_antes: stockAntes,
+      stock_despues: stockDespues,
+      usuario_nombre: usuarioNombre ?? null,
+      patient_name: patientName ?? null,
+    }).then(({ error }) => {
+      if (error) console.warn('[inventario_movimientos]', error.message);
+    });
+  }).catch(err => console.warn('[inventario_movimientos]', err));
 }
 
 export async function obtenerMovimientosInsumo(insumoId: string): Promise<MovimientoInventario[]> {

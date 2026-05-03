@@ -1,14 +1,10 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
+import { useToast } from '../context/ToastContext';
 
 export function useEliminar() {
   const [eliminando, setEliminando] = useState(false);
-  const [exito, setExito] = useState(false);
-
-  function mostrarExito() {
-    setExito(true);
-    setTimeout(() => setExito(false), 1800);
-  }
+  const { showToast } = useToast();
 
   function ejecutarEliminacion(
     titulo: string,
@@ -26,11 +22,8 @@ export function useEliminar() {
           try {
             await accion();
             setEliminando(false);
-            if (onExito) {
-              onExito();
-            } else {
-              mostrarExito();
-            }
+            showToast('', 'error');
+            if (onExito) onExito();
           } catch {
             setEliminando(false);
           }
@@ -44,11 +37,11 @@ export function useEliminar() {
     try {
       await accion();
       setEliminando(false);
-      mostrarExito();
+      showToast('', 'error');
     } catch {
       setEliminando(false);
     }
   }
 
-  return { eliminando, exito, ejecutarEliminacion, conFeedback };
+  return { eliminando, exito: false, ejecutarEliminacion, conFeedback };
 }

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Incidente } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToIncidente(row: any): Incidente {
   return {
@@ -29,9 +30,11 @@ export async function obtenerIncidentes(pacienteId: string): Promise<Incidente[]
 export async function guardarIncidente(
   inc: Omit<Incidente, 'id' | 'createdAt'>
 ): Promise<Incidente> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('incidentes')
     .insert({
+      hogar_id: hogarId,
       paciente_id: inc.pacienteId,
       tipo: inc.tipo,
       descripcion: inc.descripcion,

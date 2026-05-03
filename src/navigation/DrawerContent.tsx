@@ -35,8 +35,12 @@ const ITEMS_ADMIN: ItemMenu[] = [
   { name: 'Configuracion', label: 'Configuración',   icono: 'cog',           color: '#37474F' },
 ];
 
+const ITEM_SUPERADMIN: ItemMenu = {
+  name: 'SuperAdmin', label: 'Plataforma', icono: 'server', color: '#6A1B9A',
+};
+
 export default function DrawerContent(props: DrawerContentComponentProps) {
-  const { usuario, isAdmin, isAseo, ultimoIngreso, logout } = useAuth();
+  const { usuario, isAdmin, isAseo, isSuperAdmin, ultimoIngreso, logout } = useAuth();
   const { hogar } = useHogar();
   const insets = useSafeAreaInsets();
 
@@ -60,6 +64,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
     ...(soloAseo ? [{ name: 'Inicio', label: 'Inicio', icono: 'home', color: COLORS.primary }] : ITEMS_COMUNES),
     ...(isAdmin || isAseo ? [ITEM_ASEO] : []),
     ...(isAdmin ? ITEMS_ADMIN : []),
+    ...(isSuperAdmin ? [ITEM_SUPERADMIN] : []),
   ];
 
   return (

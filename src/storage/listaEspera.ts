@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { SolicitanteIngreso } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToSolicitante(row: any): SolicitanteIngreso {
   return {
@@ -30,9 +31,11 @@ export async function obtenerListaEspera(): Promise<SolicitanteIngreso[]> {
 }
 
 export async function guardarSolicitante(s: Omit<SolicitanteIngreso, 'id' | 'createdAt'>): Promise<SolicitanteIngreso> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('lista_espera')
     .insert({
+      hogar_id: hogarId,
       nombre: s.nombre,
       apellido: s.apellido,
       fecha_nacimiento: s.fechaNacimiento ?? null,

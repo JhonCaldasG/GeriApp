@@ -15,6 +15,7 @@ import { obtenerSignos } from '../../storage';
 import { obtenerAdministraciones } from '../../storage/administraciones';
 import { registrarAuditoria } from '../../storage/auditoria';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { useEliminar } from '../../hooks/useEliminar';
 import FeedbackEliminar from '../../components/FeedbackEliminar';
 import { COLORS, FONT_SIZES } from '../../theme';
@@ -61,6 +62,7 @@ export default function NotasEvolucionScreen({ route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const insets = useSafeAreaInsets();
   const { usuario, isAdmin } = useAuth();
+  const { showToast } = useToast();
   const { eliminando, exito, ejecutarEliminacion } = useEliminar();
   const [notas, setNotas] = useState<NotaEvolucion[]>([]);
   const [cargando, setCargando] = useState(false);
@@ -144,6 +146,7 @@ export default function NotasEvolucionScreen({ route }: Props) {
         medicamentosAdjuntos: adjuntarMeds && medsHoy.length > 0 ? medsHoy : null,
       });
       setNotas(prev => [nueva, ...prev]);
+      showToast('Nota de enfermería guardada');
       setModalVisible(false);
       registrarAuditoria({
         usuarioId: usuario?.id ?? '',

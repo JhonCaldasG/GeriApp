@@ -12,13 +12,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useAuth } from '../../context/AuthContext';
 import { useHogar } from '../../context/HogarContext';
-import { useHogarAcceso } from '../../context/HogarAccesoContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const { hogar } = useHogar();
-  const { bloquear } = useHogarAcceso();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
 
@@ -29,7 +27,6 @@ export default function LoginScreen() {
   const [error, setError]               = useState('');
   const [focusUsuario, setFocusUsuario] = useState(false);
   const [focusPass, setFocusPass]       = useState(false);
-  const [verDefaults, setVerDefaults]   = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
 
   useEffect(() => {
@@ -74,6 +71,14 @@ export default function LoginScreen() {
     Alert.alert(
       'Solicitar acceso',
       'Para obtener una cuenta, comunicate con el administrador del sistema.',
+      [{ text: 'Entendido', style: 'default' }],
+    );
+  }
+
+  function handleOlvideCredenciales() {
+    Alert.alert(
+      'Olvidé mis credenciales',
+      'Para restablecer tu contraseña, comunicate con el administrador del sistema. El administrador puede actualizarla desde el panel de gestión de usuarios.',
       [{ text: 'Entendido', style: 'default' }],
     );
   }
@@ -208,54 +213,26 @@ export default function LoginScreen() {
             <Text style={styles.btnRegistroTexto}>Solicitar acceso</Text>
           </TouchableOpacity>
 
+          {/* Olvidé mis credenciales */}
+          <TouchableOpacity
+            style={styles.olvideCreds}
+            onPress={handleOlvideCredenciales}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="lock-question" size={14} color={COLORS.textSecondary} />
+            <Text style={styles.olvidéCredsTexto}>Olvidé mis credenciales</Text>
+          </TouchableOpacity>
+
           {/* Cambiar establecimiento */}
           <TouchableOpacity
             style={styles.cambiarEstab}
-            onPress={() => { bloquear(); navigation.navigate('Welcome'); }}
+            onPress={() => navigation.navigate('Welcome')}
             activeOpacity={0.7}
           >
             <MaterialCommunityIcons name="swap-horizontal" size={14} color={COLORS.textSecondary} />
             <Text style={styles.cambiarEstabTexto}>Cambiar establecimiento</Text>
           </TouchableOpacity>
 
-          {/* Credenciales colapsables */}
-          <TouchableOpacity
-            style={styles.defaultsToggle}
-            onPress={() => setVerDefaults(v => !v)}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons
-              name={verDefaults ? 'chevron-up' : 'information-outline'}
-              size={15}
-              color={COLORS.textSecondary}
-            />
-            <Text style={styles.defaultsToggleTexto}>
-              {verDefaults ? 'Ocultar credenciales' : 'Ver accesos predeterminados'}
-            </Text>
-          </TouchableOpacity>
-
-          {verDefaults && (
-            <View style={styles.defaultsBox}>
-              <View style={styles.defaultsFila}>
-                <View style={[styles.defaultsRol, { backgroundColor: COLORS.primary + '15' }]}>
-                  <MaterialCommunityIcons name="shield-account" size={14} color={COLORS.primary} />
-                </View>
-                <View>
-                  <Text style={styles.defaultsLabel}>Administrador</Text>
-                  <Text style={styles.defaultsValor}>admin · admin123</Text>
-                </View>
-              </View>
-              <View style={[styles.defaultsFila, { marginTop: 10 }]}>
-                <View style={[styles.defaultsRol, { backgroundColor: COLORS.secondaryLight + '20' }]}>
-                  <MaterialCommunityIcons name="account-heart" size={14} color={COLORS.secondaryLight} />
-                </View>
-                <View>
-                  <Text style={styles.defaultsLabel}>Enfermero</Text>
-                  <Text style={styles.defaultsValor}>enfermero · 1234</Text>
-                </View>
-              </View>
-            </View>
-          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -400,31 +377,14 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.xs, color: COLORS.textSecondary,
     textDecorationLine: 'underline',
   },
-
-  // ── Credenciales colapsables ─────────────────────────────────────────────
-  defaultsToggle: {
+  olvideCreds: {
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'center', gap: 6,
-    marginTop: 28, paddingVertical: 6,
+    marginTop: 12, paddingVertical: 6,
   },
-  defaultsToggleTexto: {
+  olvidéCredsTexto: {
     fontSize: FONT_SIZES.xs, color: COLORS.textSecondary,
+    textDecorationLine: 'underline',
   },
-  defaultsBox: {
-    backgroundColor: COLORS.white, borderRadius: 14,
-    padding: 16, marginTop: 10,
-    borderWidth: 1, borderColor: COLORS.border,
-  },
-  defaultsFila: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  defaultsRol: {
-    width: 30, height: 30, borderRadius: 8,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  defaultsLabel: {
-    fontSize: FONT_SIZES.xs, fontWeight: '700',
-    color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: 0.4,
-  },
-  defaultsValor: {
-    fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.textPrimary, marginTop: 1,
-  },
+
 });

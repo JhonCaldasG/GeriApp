@@ -6,6 +6,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { useAppTheme } from '../../context/ThemeContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 import { NotaHandover } from '../../types';
@@ -26,6 +27,7 @@ function turnoActual(): NotaHandover['turno'] {
 
 export default function HandoverScreen() {
   const { usuario } = useAuth();
+  const { showToast } = useToast();
   const { colors } = useAppTheme();
   const [ultimaNota, setUltimaNota] = useState<NotaHandover | null>(null);
   const [modo, setModo] = useState<'ver' | 'editar'>('ver');
@@ -52,7 +54,7 @@ export default function HandoverScreen() {
         medicamentosEventos: medicamentosEventos.trim(),
         pendientesProximoTurno: pendientes.trim(),
       });
-      Alert.alert('Guardado', 'Nota de turno guardada correctamente.');
+      showToast('Nota de turno guardada correctamente.');
       setModo('ver');
       obtenerUltimoHandover().then(n => setUltimaNota(n));
     } catch {

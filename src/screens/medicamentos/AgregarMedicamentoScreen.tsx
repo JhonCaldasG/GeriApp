@@ -8,6 +8,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MedicamentosStackParamList, Insumo } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import FirmaModal from '../../components/FirmaModal';
 import HoraInicioSelector from '../../components/HoraInicioSelector';
 import { COLORS, FONT_SIZES } from '../../theme';
@@ -177,6 +178,7 @@ export default function AgregarMedicamentoScreen({ navigation, route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const { agregarMedicamento } = useApp();
   const { usuario } = useAuth();
+  const { showToast } = useToast();
   const [guardando, setGuardando] = useState(false);
   const [firmaVisible, setFirmaVisible] = useState(false);
 
@@ -237,9 +239,8 @@ export default function AgregarMedicamentoScreen({ navigation, route }: Props) {
         observaciones: observaciones.trim(),
         activo: true,
       });
-      Alert.alert('Guardado', `Medicamento registrado.\nFirmado por: ${firmante}`, [
-        { text: 'Aceptar', onPress: () => navigation.goBack() },
-      ]);
+      showToast('');
+      setTimeout(() => navigation.goBack(), 2600);
     } catch {
       Alert.alert('Error', 'No se pudo guardar. Intenta nuevamente.');
     } finally {
