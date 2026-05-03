@@ -9,6 +9,7 @@ import { PacientesStackParamList, Ausencia } from '../../types';
 import { obtenerAusencias, guardarAusencia, cerrarAusencia, eliminarAusencia } from '../../storage/ausencias';
 import { useAuth } from '../../context/AuthContext';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { useEliminar } from '../../hooks/useEliminar';
 import FeedbackEliminar from '../../components/FeedbackEliminar';
 import SignaturePad from '../../components/SignaturePad';
@@ -34,6 +35,7 @@ export default function AusenciasScreen({ route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const { isAdmin } = useAuth();
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
 
   const { eliminando, exito, ejecutarEliminacion } = useEliminar();
   const [ausencias, setAusencias] = useState<Ausencia[]>([]);
@@ -124,6 +126,7 @@ export default function AusenciasScreen({ route }: Props) {
         observaciones: observaciones.trim(),
         firmaFamiliar: firmaFamiliar ?? null,
       });
+      showToast('Ausencia registrada');
       setModalVisible(false);
       await cargar();
     } catch {

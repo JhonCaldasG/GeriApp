@@ -11,11 +11,14 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { COLORS, FONT_SIZES } from '../theme';
 import { useAuth } from '../context/AuthContext';
-import { useHogarAcceso } from '../context/HogarAccesoContext';
 import { DrawerProvider, useDrawer } from '../context/DrawerContext';
 import CustomDrawer from '../components/CustomDrawer';
 import WelcomeScreen from '../screens/auth/WelcomeScreen';
+import HogarSelectorScreen from '../screens/auth/HogarSelectorScreen';
 import PlanesScreen from '../screens/auth/PlanesScreen';
+import RegistroHogarScreen from '../screens/auth/RegistroHogarScreen';
+import SuperAdminScreen from '../screens/admin/SuperAdminScreen';
+import HogarDetalleScreen from '../screens/admin/HogarDetalleScreen';
 import {
   PacientesStackParamList,
   SignosStackParamList,
@@ -27,7 +30,6 @@ import {
 
 import NotificacionesScreen from '../screens/NotificacionesScreen';
 import { useNotificaciones } from '../context/NotificacionesContext';
-import LoginScreen from '../screens/auth/LoginScreen';
 import GestionUsuariosScreen from '../screens/auth/GestionUsuariosScreen';
 import ConfiguracionHogarScreen from '../screens/configuracion/ConfiguracionHogarScreen';
 import DashboardScreen from '../screens/DashboardScreen';
@@ -300,7 +302,7 @@ function AseoNavigator() {
 
 // ── App principal con tabs ocultos + drawer custom ─────────────────────────────
 function AppTabs() {
-  const { isAdmin, isAseo } = useAuth();
+  const { isAdmin, isAseo, isSuperAdmin } = useAuth();
   const soloAseo = isAseo && !isAdmin;
 
   return (
@@ -406,6 +408,19 @@ function AppTabs() {
             <Tab.Screen name="Estadisticas" component={EstadisticasScreen}
               options={{ headerShown: true, ...headerOpts, title: 'Estadísticas del Hogar', headerLeft: menuLeft }} />
           )}
+
+          {isSuperAdmin && (
+            <Tab.Screen name="SuperAdmin" component={SuperAdminScreen}
+              options={{ headerShown: true, ...headerOpts, title: 'Plataforma', headerLeft: menuLeft }} />
+          )}
+          {isSuperAdmin && (
+            <Tab.Screen name="HogarDetalle" component={HogarDetalleScreen}
+              options={({ route, navigation }) => ({
+                headerShown: true, ...headerOpts,
+                title: (route.params as any)?.hogarNombre ?? 'Hogar',
+                headerLeft: () => backButton(navigation),
+              })} />
+          )}
         </Tab.Navigator>
         <CustomDrawer />
       </View>
@@ -427,15 +442,15 @@ const linking = {
 };
 
 function AuthNavigator() {
-  const { desbloqueado } = useHogarAcceso();
   return (
     <AuthStack.Navigator
       screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
-      initialRouteName={desbloqueado ? 'Login' : 'Welcome'}
+      initialRouteName="Welcome"
     >
-      <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
-      <AuthStack.Screen name="Planes"  component={PlanesScreen} />
-      <AuthStack.Screen name="Login"   component={LoginScreen} />
+      <AuthStack.Screen name="Welcome"        component={WelcomeScreen} />
+      <AuthStack.Screen name="HogarSelector"  component={HogarSelectorScreen} />
+      <AuthStack.Screen name="Planes"         component={PlanesScreen} />
+      <AuthStack.Screen name="RegistroHogar"  component={RegistroHogarScreen} />
     </AuthStack.Navigator>
   );
 }

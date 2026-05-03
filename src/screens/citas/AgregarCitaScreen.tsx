@@ -8,6 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useApp } from '../../context/AppContext';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 import { guardarCita, actualizarCita, obtenerCitaPorId } from '../../storage/citas';
 
@@ -16,6 +17,7 @@ export default function AgregarCitaScreen() {
   const route = useRoute<any>();
   const { pacientes } = useApp();
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
   const pacienteIdInicial = route.params?.pacienteId as string | undefined;
   const citaId = route.params?.citaId as string | undefined;
   const esEdicion = !!citaId;
@@ -75,6 +77,7 @@ export default function AgregarCitaScreen() {
           estado: 'pendiente',
         });
       }
+      showToast('Cita guardada');
       navigation.goBack();
     } catch { Alert.alert('Error', 'No se pudo guardar la cita.'); }
     setGuardando(false);

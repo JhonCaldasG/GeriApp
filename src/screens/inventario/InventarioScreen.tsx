@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 import { Insumo } from '../../types';
 import { obtenerInventario, ajustarStock, obtenerMovimientosInsumo, MovimientoInventario } from '../../storage/inventario';
@@ -49,6 +50,7 @@ export default function InventarioScreen() {
   const navigation = useNavigation<any>();
   const { isAdmin, isAseo, usuario } = useAuth();
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [cargando, setCargando] = useState(false);
   const [busqueda, setBusqueda] = useState('');
@@ -105,6 +107,7 @@ export default function InventarioScreen() {
         patientName.trim() || undefined,
       );
       await cargar();
+      showToast('Stock actualizado', 'warning');
     } catch { Alert.alert('Error', 'No se pudo ajustar el stock.'); }
     setSavingAdjustment(false);
     setAjusteModal(null);
@@ -123,7 +126,7 @@ export default function InventarioScreen() {
         mensaje: reporteMensaje.trim() || `Stock actual: ${reporteModal.stockActual} ${reporteModal.unidad} (mínimo: ${reporteModal.stockMinimo}). Reportado por ${usuario ? `${usuario.nombre} ${usuario.apellido}` : 'un usuario'}.`,
         datos: { insumoId: reporteModal.id, stockActual: reporteModal.stockActual },
       });
-      Alert.alert('Enviado', 'El administrador fue notificado.');
+      showToast('Administrador notificado.');
     } catch {
       Alert.alert('Error', 'No se pudo enviar el reporte.');
     }

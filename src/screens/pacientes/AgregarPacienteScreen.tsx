@@ -10,6 +10,7 @@ import { PacientesStackParamList } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { obtenerPacientes } from '../../storage';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 
 type Props = NativeStackScreenProps<PacientesStackParamList, 'AgregarPaciente'>;
@@ -35,6 +36,7 @@ function Campo({ label, value, onChangeText, placeholder, keyboardType, multilin
 export default function AgregarPacienteScreen({ navigation, route }: Props) {
   const { agregarPaciente, actualizarPaciente } = useApp();
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
   const pacienteId = route.params?.pacienteId;
   const modoEdicion = !!pacienteId;
 
@@ -186,9 +188,7 @@ export default function AgregarPacienteScreen({ navigation, route }: Props) {
           );
         }
         await actualizarPaciente(pacienteId!, { ...datos, fotoUri: urlFinal ?? undefined });
-        Alert.alert('Actualizado', 'Los datos del paciente fueron actualizados correctamente.', [
-          { text: 'Aceptar', onPress: () => navigation.goBack() },
-        ]);
+        showToast('', 'warning'); setTimeout(() => navigation.goBack(), 2600);
       } else {
         // Crear paciente sin foto primero para obtener el ID
         const nuevoPaciente = await agregarPaciente({ ...datos, fotoUri: undefined });
@@ -201,9 +201,7 @@ export default function AgregarPacienteScreen({ navigation, route }: Props) {
           );
           await actualizarPaciente(nuevoPaciente.id, { fotoUri: urlFinal });
         }
-        Alert.alert('Guardado', 'El paciente fue registrado correctamente.', [
-          { text: 'Aceptar', onPress: () => navigation.goBack() },
-        ]);
+        showToast(''); setTimeout(() => navigation.goBack(), 2600);
       }
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'No se pudo guardar. Intente nuevamente.');

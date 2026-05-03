@@ -5,28 +5,30 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/context/AuthContext';
 import { AppProvider } from './src/context/AppContext';
 import { HogarProvider } from './src/context/HogarContext';
-import { HogarAccesoProvider } from './src/context/HogarAccesoContext';
 import { NotificacionesProvider } from './src/context/NotificacionesContext';
 import { ThemeProvider, useAppTheme } from './src/context/ThemeContext';
+import { ToastProvider } from './src/context/ToastContext';
 import { configurarNotificaciones } from './src/utils/notificacionesPush';
 import AppNavigator from './src/navigation/AppNavigator';
+import Toast from './src/components/Toast';
 
 function AppWithTheme() {
   const { paperTheme, isDark } = useAppTheme();
   return (
     <PaperProvider theme={paperTheme}>
-      <HogarAccesoProvider>
-        <HogarProvider>
-          <AuthProvider>
-            <NotificacionesProvider>
-              <AppProvider>
+      <HogarProvider>
+        <AuthProvider>
+          <NotificacionesProvider>
+            <AppProvider>
+              <ToastProvider>
                 <StatusBar style={isDark ? 'light' : 'light'} />
                 <AppNavigator />
-              </AppProvider>
-            </NotificacionesProvider>
-          </AuthProvider>
-        </HogarProvider>
-      </HogarAccesoProvider>
+                <Toast />
+              </ToastProvider>
+            </AppProvider>
+          </NotificacionesProvider>
+        </AuthProvider>
+      </HogarProvider>
     </PaperProvider>
   );
 }

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { NotaEvolucion } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToNota(row: any): NotaEvolucion {
   return {
@@ -27,7 +28,9 @@ export async function obtenerNotas(pacienteId: string): Promise<NotaEvolucion[]>
 }
 
 export async function guardarNota(nota: Omit<NotaEvolucion, 'id' | 'createdAt'>): Promise<NotaEvolucion> {
+  const hogarId = await getHogarId();
   const base = {
+    hogar_id: hogarId,
     paciente_id: nota.pacienteId,
     texto: nota.texto,
     usuario_id: nota.usuarioId,

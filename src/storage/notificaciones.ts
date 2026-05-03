@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Notificacion, NotificacionTipo } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToNotificacion(row: any): Notificacion {
   return {
@@ -32,7 +33,9 @@ export async function obtenerNotificaciones(
 export async function crearNotificacion(
   notif: Omit<Notificacion, 'id' | 'leida' | 'createdAt'>,
 ): Promise<void> {
+  const hogarId = await getHogarId();
   const { error } = await supabase.from('notificaciones').insert({
+    hogar_id: hogarId,
     destinatario_id: notif.destinatarioId ?? null,
     para_rol: notif.paraRol ?? null,
     tipo: notif.tipo,

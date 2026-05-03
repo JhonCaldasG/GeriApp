@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { SUPABASE_URL } from '../lib/supabase';
 import { LimpiezaRegistro } from '../types';
+import { getHogarId } from './hogar';
 
 const BUCKET = 'hogar';
 
@@ -45,9 +46,11 @@ export async function obtenerLimpiezas(pacienteId?: string): Promise<LimpiezaReg
 }
 
 export async function guardarLimpieza(l: Omit<LimpiezaRegistro, 'id' | 'createdAt'>): Promise<LimpiezaRegistro> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('limpiezas')
     .insert({
+      hogar_id: hogarId,
       paciente_id: l.pacienteId,
       tipo: l.tipo,
       descripcion: l.descripcion,

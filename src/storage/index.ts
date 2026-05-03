@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Paciente, SignoVital, Medicamento, RegistroMedico } from '../types';
+import { getHogarId } from './hogar';
 
 // ─── MAPPERS ─────────────────────────────────────────────────────────────────
 
@@ -86,9 +87,11 @@ export async function obtenerPacientes(): Promise<Paciente[]> {
 }
 
 export async function guardarPaciente(paciente: Omit<Paciente, 'id' | 'createdAt'>): Promise<Paciente> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('pacientes')
     .insert({
+      hogar_id: hogarId,
       nombre: paciente.nombre,
       apellido: paciente.apellido,
       fecha_nacimiento: paciente.fechaNacimiento,
@@ -175,9 +178,11 @@ export async function obtenerSignos(pacienteId?: string): Promise<SignoVital[]> 
 }
 
 export async function guardarSigno(signo: Omit<SignoVital, 'id' | 'createdAt'>): Promise<SignoVital> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('signos_vitales')
     .insert({
+      hogar_id: hogarId,
       paciente_id: signo.pacienteId,
       presion_sistolica: signo.presionSistolica,
       presion_diastolica: signo.presionDiastolica,
@@ -231,9 +236,11 @@ export async function obtenerMedicamentos(pacienteId?: string): Promise<Medicame
 }
 
 export async function guardarMedicamento(med: Omit<Medicamento, 'id' | 'createdAt'>): Promise<Medicamento> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('medicamentos')
     .insert({
+      hogar_id: hogarId,
       paciente_id: med.pacienteId,
       nombre: med.nombre,
       dosis: med.dosis,
@@ -282,9 +289,11 @@ export async function obtenerRegistros(pacienteId?: string): Promise<RegistroMed
 }
 
 export async function guardarRegistro(registro: Omit<RegistroMedico, 'id' | 'createdAt'>): Promise<RegistroMedico> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('registros_medicos')
     .insert({
+      hogar_id: hogarId,
       paciente_id: registro.pacienteId,
       tipo: registro.tipo,
       titulo: registro.titulo,

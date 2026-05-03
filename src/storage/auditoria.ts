@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { AuditoriaEntry } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToEntry(row: any): AuditoriaEntry {
   return {
@@ -18,19 +19,22 @@ export async function registrarAuditoria(
   entry: Omit<AuditoriaEntry, 'id' | 'createdAt'>
 ): Promise<void> {
   // Fire-and-forget — no bloquea el flujo principal
-  supabase
-    .from('auditoria')
-    .insert({
-      usuario_id: entry.usuarioId,
-      usuario_nombre: entry.usuarioNombre,
-      accion: entry.accion,
-      entidad: entry.entidad,
-      entidad_id: entry.entidadId ?? null,
-      detalle: entry.detalle ?? null,
-    })
-    .then(({ error }) => {
-      if (error) console.warn('[auditoria]', error.message);
-    });
+  getHogarId().then(hogarId => {
+    supabase
+      .from('auditoria')
+      .insert({
+        hogar_id: hogarId,
+        usuario_id: entry.usuarioId,
+        usuario_nombre: entry.usuarioNombre,
+        accion: entry.accion,
+        entidad: entry.entidad,
+        entidad_id: entry.entidadId ?? null,
+        detalle: entry.detalle ?? null,
+      })
+      .then(({ error }) => {
+        if (error) console.warn('[auditoria]', error.message);
+      });
+  }).catch(err => console.warn('[auditoria]', err));
 }
 
 export async function obtenerAuditoria(limite = 100): Promise<AuditoriaEntry[]> {

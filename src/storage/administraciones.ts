@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { AdministracionMedicamento } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToAdministracion(row: any): AdministracionMedicamento {
   return {
@@ -50,9 +51,11 @@ export async function eliminarAdministracion(id: string): Promise<void> {
 export async function registrarAdministracion(
   a: Omit<AdministracionMedicamento, 'id' | 'createdAt'>
 ): Promise<AdministracionMedicamento> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('administraciones_medicamento')
     .insert({
+      hogar_id: hogarId,
       medicamento_id: a.medicamentoId,
       paciente_id: a.pacienteId,
       medicamento_nombre: a.medicamentoNombre,

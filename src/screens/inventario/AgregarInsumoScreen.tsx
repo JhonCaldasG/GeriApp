@@ -8,6 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 import { Insumo } from '../../types';
 import { obtenerInventario, guardarInsumo, actualizarInsumo, eliminarInsumo } from '../../storage/inventario';
@@ -175,6 +176,7 @@ export default function AgregarInsumoScreen() {
   const route = useRoute<any>();
   const { isAdmin } = useAuth();
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
   const insumoId = route.params?.insumoId as string | undefined;
   const isEditing = !!insumoId;
 
@@ -321,10 +323,12 @@ export default function AgregarInsumoScreen() {
     try {
       if (isEditing) {
         await actualizarInsumo(insumoId!, buildPayload());
-        navigation.navigate('Inventario');
+        showToast('', 'warning');
+        setTimeout(() => navigation.navigate('Inventario'), 2600);
       } else {
         await guardarInsumo(buildPayload());
-        showCheck();
+        showToast('');
+        setTimeout(() => navigation.navigate('Inventario'), 2600);
       }
     } catch { Alert.alert('Error', 'No se pudo guardar el insumo.'); }
     setSaving(false);
@@ -334,7 +338,7 @@ export default function AgregarInsumoScreen() {
     Alert.alert('Eliminar insumo', '¿Estás seguro? Esta acción no se puede deshacer.', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Eliminar', style: 'destructive', onPress: async () => {
-        try { await eliminarInsumo(insumoId!); navigation.navigate('Inventario'); }
+        try { await eliminarInsumo(insumoId!); showToast('', 'error'); setTimeout(() => navigation.navigate('Inventario'), 2600); }
         catch { Alert.alert('Error', 'No se pudo eliminar.'); }
       }},
     ]);

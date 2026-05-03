@@ -13,6 +13,7 @@ import { uploadImagen } from '../../lib/supabase';
 import VisorFotoModal from '../../components/VisorFotoModal';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { COLORS, FONT_SIZES } from '../../theme';
 
 type Props = NativeStackScreenProps<ActividadesStackParamList, 'RegistrarActividad'>;
@@ -33,6 +34,7 @@ export default function RegistrarActividadScreen({ navigation, route }: Props) {
   const { pacienteId, pacienteNombre } = route.params;
   const { agregarActividad } = useApp();
   const { usuario } = useAuth();
+  const { showToast } = useToast();
 
   const [tipo, setTipo] = useState<ActividadPaciente['tipo']>('Lúdica');
   const [nombre, setNombre] = useState('');
@@ -117,6 +119,7 @@ export default function RegistrarActividadScreen({ navigation, route }: Props) {
         realizadoPor: firmante,
         fotoUrls,
       });
+      showToast('');
       navigation.goBack();
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'No se pudo guardar. Intente nuevamente.');

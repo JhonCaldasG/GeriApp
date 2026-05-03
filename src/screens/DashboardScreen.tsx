@@ -18,6 +18,11 @@ import { obtenerIncumplimientos, registrarIncumplimiento } from '../storage/incu
 import { crearNotificacion } from '../storage/notificaciones';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Fecha local del dispositivo (hora Colombia) como string YYYY-MM-DD
+function toLocalDateISO(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 // ── Tarjeta de estadística clickable ──────────────────────────────────────────
 interface StatCardProps {
   icono: string;
@@ -122,7 +127,7 @@ export default function DashboardScreen() {
       const ahora = new Date();
       const horaActualMin = ahora.getHours() * 60 + ahora.getMinutes();
       const hoyStr = ahora.toDateString();
-      const hoyISO = ahora.toISOString().slice(0, 10);
+      const hoyISO = toLocalDateISO(ahora);
 
       const nuevos: { tipo: string; descripcion: string }[] = [];
       const promises: Promise<void>[] = [];
@@ -139,6 +144,8 @@ export default function DashboardScreen() {
           const [hFin, mFin] = t.horaFin.split(':').map(Number);
           if (isNaN(hFin) || isNaN(mFin)) return;
           if (horaActualMin <= hFin * 60 + mFin) return;
+          // No generar incumplimiento el mismo día en que se creó la toma
+          if (t.createdAt && toLocalDateISO(new Date(t.createdAt)) === hoyISO) return;
           const yaRegistrada = signosVitales.some(s =>
             s.pacienteId === p.id && s.tomaNombre === t.nombre &&
             new Date(s.createdAt).toDateString() === hoyStr
@@ -198,7 +205,7 @@ export default function DashboardScreen() {
   // Verifica días anteriores (hasta 7 días atrás) y registra infracciones pendientes
   const verificarHistorico = useCallback(async () => {
     if (isAseo || pacientes.length === 0) return;
-    const hoyISO = new Date().toISOString().slice(0, 10);
+    const hoyISO = toLocalDateISO(new Date());
 
     const pacientesActivos = pacientes.filter(
       p => !p.fallecido && (!p.fechaIngreso || p.fechaIngreso.slice(0, 10) <= hoyISO)
@@ -209,7 +216,7 @@ export default function DashboardScreen() {
     for (let d = 1; d <= DIAS; d++) {
       const fecha = new Date();
       fecha.setDate(fecha.getDate() - d);
-      const fechaISO = fecha.toISOString().slice(0, 10);
+      const fechaISO = toLocalDateISO(fecha);
       const fechaStr = fecha.toDateString();
 
       // ── Signos vitales: tomas sin registro ese día ──────────────────────────
@@ -219,8 +226,8 @@ export default function DashboardScreen() {
         if (!horarios[p.id]?.length) return;
         (horarios[p.id]).forEach(t => {
           if (!t.horaFin) return;
-          // Only check days on or after the schedule entry was created
-          if (t.createdAt.slice(0, 10) > fechaISO) return;
+          // Only check days on or after the schedule entry was created (compare in local time)
+          if (toLocalDateISO(new Date(t.createdAt)) > fechaISO) return;
           const yaRegistrada = signosVitales.some(s =>
             s.pacienteId === p.id &&
             s.tomaNombre === t.nombre &&

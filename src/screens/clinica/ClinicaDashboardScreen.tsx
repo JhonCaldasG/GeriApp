@@ -7,7 +7,7 @@ import { useApp } from '../../context/AppContext';
 import { useAppTheme } from '../../context/ThemeContext';
 import { COLORS, FONT_SIZES, SIGNO_RANGOS } from '../../theme';
 import { SignoVital, Paciente, Incumplimiento } from '../../types';
-import { obtenerIncumplimientos } from '../../storage/incumplimientos';
+import { obtenerIncumplimientos, registrarIncumplimiento } from '../../storage/incumplimientos';
 
 // ── Tipos locales ──────────────────────────────────────────────────────────────
 type AlertaSignoTipo = 'en_curso' | 'incumplimiento' | 'proxima' | 'sin_toma';
@@ -75,16 +75,51 @@ export default function ClinicaDashboardScreen() {
     try { setIncumplimientosDB(await obtenerIncumplimientos(30)); } catch {}
   }, []);
 
-  useFocusEffect(useCallback(() => { cargarIncumplimientos(); }, [cargarIncumplimientos]));
+  // Persiste infracciones de medicamentos a la BD (misma lógica que infraccionesMeds)
+  // para que InfraccionesScreen pueda verlas aunque el usuario no haya pasado por DashboardScreen.
+  const persistirInfraccionesMeds = useCallback(async () => {
+    const hoyDate = new Date(); hoyDate.setHours(0, 0, 0, 0);
+    const mActivos = medicamentos.filter(m => m.activo);
+    const pacientesActivos = pacientes.filter(p => !p.fallecido);
+    const promises: Promise<void>[] = [];
+    for (let dias = 1; dias <= 7; dias++) {
+      const fecha = new Date(hoyDate); fecha.setDate(hoyDate.getDate() - dias);
+      const fechaISO = fecha.toISOString().slice(0, 10);
+      const fechaStr = fecha.toDateString();
+      const ante1 = new Date(fecha); ante1.setDate(fecha.getDate() - 1);
+      const ante2 = new Date(fecha); ante2.setDate(fecha.getDate() - 2);
+      mActivos.forEach(m => {
+        if (administraciones.some(a => a.medicamentoId === m.id && new Date(a.createdAt).toDateString() === fechaStr)) return;
+        const activo = administraciones.some(a =>
+          a.medicamentoId === m.id && (
+            new Date(a.createdAt).toDateString() === ante1.toDateString() ||
+            new Date(a.createdAt).toDateString() === ante2.toDateString()
+          )
+        );
+        if (!activo) return;
+        const paciente = pacientesActivos.find(p => p.id === m.pacienteId);
+        if (!paciente) return;
+        if (paciente.fechaIngreso && paciente.fechaIngreso.slice(0, 10) > fechaISO) return;
+        promises.push(registrarIncumplimiento({ pacienteId: paciente.id, tipo: 'medicamento', detalle: m.nombre, fecha: fechaISO }));
+      });
+    }
+    if (promises.length > 0) await Promise.allSettled(promises);
+  }, [medicamentos, pacientes, administraciones]);
+
+  useFocusEffect(useCallback(() => {
+    persistirInfraccionesMeds().then(cargarIncumplimientos);
+  }, [persistirInfraccionesMeds, cargarIncumplimientos]));
 
   async function refrescar() {
     setRefrescando(true);
+    await persistirInfraccionesMeds();
     await cargarIncumplimientos();
     setRefrescando(false);
   }
 
   const hoy    = new Date().toDateString();
-  const hoyISO = new Date().toISOString().slice(0, 10);
+  const _now   = new Date();
+  const hoyISO = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
   const signosHoy         = signosVitales.filter(s => new Date(s.createdAt).toDateString() === hoy);
   const medicamentosActivos = medicamentos.filter(m => m.activo);
 

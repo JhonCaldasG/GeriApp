@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { RegistroAsistencia } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToAsistencia(row: any): RegistroAsistencia {
   return {
@@ -38,6 +39,7 @@ export async function obtenerAsistenciaRango(desde: string, hasta: string): Prom
 }
 
 export async function registrarEntrada(usuarioId: string, usuarioNombre: string, usuarioRol: string): Promise<RegistroAsistencia> {
+  const hogarId = await getHogarId();
   const hoy = new Date().toISOString().slice(0, 10);
   const hora = new Date().toTimeString().slice(0, 5);
   const { data: existente } = await supabase
@@ -58,7 +60,7 @@ export async function registrarEntrada(usuarioId: string, usuarioNombre: string,
   }
   const { data, error } = await supabase
     .from('asistencia')
-    .insert({ usuario_id: usuarioId, usuario_nombre: usuarioNombre, usuario_rol: usuarioRol, fecha: hoy, hora_entrada: hora })
+    .insert({ hogar_id: hogarId, usuario_id: usuarioId, usuario_nombre: usuarioNombre, usuario_rol: usuarioRol, fecha: hoy, hora_entrada: hora })
     .select()
     .single();
   if (error) throw error;

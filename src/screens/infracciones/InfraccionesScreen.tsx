@@ -678,11 +678,11 @@ export default function InfraccionesScreen() {
   }
 
   // Secciones
-  const sinJustificar    = incumplimientos.filter(i => !i.requerimientoEstado);
+  const sinJustificar    = incumplimientos.filter(i => !i.requerimientoEstado && !completadosIds.has(i.id));
   const pendientes       = incumplimientos.filter(i => i.requerimientoEstado === 'pendiente');
   const resueltasPendReg = incumplimientos.filter(i => i.requerimientoEstado === 'resuelto' && !completadosIds.has(i.id));
-  const cerradas         = incumplimientos.filter(i => i.requerimientoEstado === 'resuelto' &&  completadosIds.has(i.id));
-  const rechazadas       = incumplimientos.filter(i => i.requerimientoEstado === 'rechazado');
+  const cerradas         = incumplimientos.filter(i => completadosIds.has(i.id));
+  const rechazadas       = incumplimientos.filter(i => i.requerimientoEstado === 'rechazado' && !completadosIds.has(i.id));
 
   const ITEMS_VISIBLES = 4;
   function sliceSeccion<T>(titulo: string, arr: T[]) {

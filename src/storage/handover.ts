@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { NotaHandover } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToHandover(row: any): NotaHandover {
   return {
@@ -54,9 +55,11 @@ export async function guardarHandover(nota: Omit<NotaHandover, 'id' | 'createdAt
     if (error) throw error;
     return rowToHandover(data);
   }
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('handover')
     .insert({
+      hogar_id: hogarId,
       usuario_id: nota.usuarioId,
       usuario_nombre: nota.usuarioNombre,
       turno: nota.turno,

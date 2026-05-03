@@ -8,6 +8,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useHogar } from '../../context/HogarContext';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { supabase, uploadImagen } from '../../lib/supabase';
 import { HogarInfo } from '../../storage/hogar';
 import { COLORS, FONT_SIZES } from '../../theme';
@@ -16,6 +17,7 @@ import { Switch } from 'react-native';
 export default function ConfiguracionHogarScreen() {
   const { hogar, actualizarHogar } = useHogar();
   const { isDark, toggleTheme, colors } = useAppTheme();
+  const { showToast } = useToast();
   const [guardando, setGuardando] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricSupported, setBiometricSupported] = useState(false);
@@ -89,7 +91,7 @@ export default function ConfiguracionHogarScreen() {
     };
     await actualizarHogar(info);
     setGuardando(false);
-    Alert.alert('Guardado', 'La información del hogar fue actualizada correctamente.');
+    showToast('', 'warning');
   }
 
   return (

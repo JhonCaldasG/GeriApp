@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { EvaluacionClinica } from '../types';
+import { getHogarId } from './hogar';
 
 function rowToEvaluacion(row: any): EvaluacionClinica {
   return {
@@ -32,9 +33,11 @@ export async function obtenerEvaluaciones(
 export async function guardarEvaluacion(
   ev: Omit<EvaluacionClinica, 'id' | 'createdAt'>
 ): Promise<EvaluacionClinica> {
+  const hogarId = await getHogarId();
   const { data, error } = await supabase
     .from('evaluaciones_clinicas')
     .insert({
+      hogar_id: hogarId,
       paciente_id: ev.pacienteId,
       tipo: ev.tipo,
       puntuacion: ev.puntuacion,
